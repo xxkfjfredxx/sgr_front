@@ -5,9 +5,12 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
+  PlusIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
+import { EmployeeList, EmployeeForm } from "@/pages/employees";
+
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -22,6 +25,18 @@ export const routes = [
         name: "dashboard",
         path: "/home",
         element: <Home />,
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "employees",
+        path: "/employees",
+        element: <EmployeeList />,
+      },
+      {
+        icon: <PlusIcon {...icon} />,
+        name: "add employee",
+        path: "/employees/create",
+        element: <EmployeeForm />,
       },
       {
         icon: <UserCircleIcon {...icon} />,
