@@ -10,6 +10,8 @@ import {
 import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 import { EmployeeList, EmployeeForm } from "@/pages/employees";
+import { EmploymentLinkForm, EmploymentLinkList } from "@/pages/employment-links";
+
 
 
 const icon = {
@@ -37,6 +39,18 @@ export const routes = [
         name: "add employee",
         path: "/employees/create",
         element: <EmployeeForm />,
+      },
+      {
+        icon: <PlusIcon {...icon} />,
+        name: "add employment link",
+        path: "/employment-links/create",
+        element: <EmploymentLinkForm />,
+      },
+      {
+        icon: <TableCellsIcon {...icon} />,
+        name: "employment links",
+        path: "/employment-links",
+        element: <EmploymentLinkList />,
       },
       {
         icon: <UserCircleIcon {...icon} />,

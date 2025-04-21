@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button, Input, Typography, Select, Option } from '@material-tailwind/react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
@@ -21,7 +22,35 @@ const EmployeeForm = () => {
     address: '',
     ethnicity: '',
     socioeconomic_stratum: '',
+    position: '',
+    work_area: '',
+    company: '',
   });
+
+  const [positions, setPositions] = useState([]);
+  const [workAreas, setWorkAreas] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCatalogs = async () => {
+      try {
+        const [posRes, areaRes, compRes] = await Promise.all([
+          api.get('/positions/'),
+          api.get('/work-areas/'),
+          api.get('/companies/'),
+        ]);
+        setPositions(posRes.data);
+        setWorkAreas(areaRes.data);
+        setCompanies(compRes.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading catalogs:', error);
+        setLoading(false);
+      }
+    };
+    fetchCatalogs();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -52,7 +81,7 @@ const EmployeeForm = () => {
         <Input label="Document" name="document" value={formData.document} onChange={handleChange} required />
         <Input label="Birth Date" name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} />
 
-        <Select label="Gender" name="gender" value={formData.gender} onChange={(val) => setFormData({ ...formData, gender: val })}>
+        <Select label="Gender" value={formData.gender} onChange={(val) => setFormData({ ...formData, gender: val })}>
           <Option value="Male">Male</Option>
           <Option value="Female">Female</Option>
           <Option value="Other">Other</Option>
@@ -62,7 +91,7 @@ const EmployeeForm = () => {
         <Input label="AFP" name="afp" value={formData.afp} onChange={handleChange} />
         <Input label="Education" name="education" value={formData.education} onChange={handleChange} />
 
-        <Select label="Marital Status" name="marital_status" value={formData.marital_status} onChange={(val) => setFormData({ ...formData, marital_status: val })}>
+        <Select label="Marital Status" value={formData.marital_status} onChange={(val) => setFormData({ ...formData, marital_status: val })}>
           <Option value="Single">Single</Option>
           <Option value="Married">Married</Option>
           <Option value="Divorced">Divorced</Option>
@@ -73,7 +102,7 @@ const EmployeeForm = () => {
         <Input label="Phone Contact" name="phone_contact" value={formData.phone_contact} onChange={handleChange} />
         <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
 
-        <Select label="Ethnicity" name="ethnicity" value={formData.ethnicity} onChange={(val) => setFormData({ ...formData, ethnicity: val })}>
+        <Select label="Ethnicity" value={formData.ethnicity} onChange={(val) => setFormData({ ...formData, ethnicity: val })}>
           <Option value="None">None</Option>
           <Option value="Afro-Colombian">Afro-Colombian</Option>
           <Option value="Indigenous">Indigenous</Option>
@@ -82,7 +111,7 @@ const EmployeeForm = () => {
           <Option value="Other">Other</Option>
         </Select>
 
-        <Select label="Socioeconomic Stratum" name="socioeconomic_stratum" value={formData.socioeconomic_stratum} onChange={(val) => setFormData({ ...formData, socioeconomic_stratum: val })}>
+        <Select label="Socioeconomic Stratum" value={formData.socioeconomic_stratum} onChange={(val) => setFormData({ ...formData, socioeconomic_stratum: val })}>
           <Option value="1">1 - Very Low</Option>
           <Option value="2">2 - Low</Option>
           <Option value="3">3 - Medium Low</Option>
@@ -90,6 +119,31 @@ const EmployeeForm = () => {
           <Option value="5">5 - Medium High</Option>
           <Option value="6">6 - High</Option>
         </Select>
+
+        {!loading && (
+          <>
+            <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData({ ...formData, position: val })}>
+             
+              {positions.map((pos) => (
+                <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
+              ))}
+            </Select>
+
+            <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData({ ...formData, work_area: val })}>
+            
+              {workAreas.map((area) => (
+                <Option key={area.id} value={String(area.id)}>{area.name}</Option>
+              ))}
+            </Select>
+
+            <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData({ ...formData, company: val })}>
+              
+              {companies.map((comp) => (
+                <Option key={comp.id} value={String(comp.id)}>{comp.name}</Option>
+              ))}
+            </Select>
+          </>
+        )}
 
         <div className="flex items-center gap-2">
           <input
@@ -101,13 +155,10 @@ const EmployeeForm = () => {
           <label htmlFor="is_active">Active</label>
         </div>
 
-        <Button type="submit" color="blue">
-          Save Employee
-        </Button>
+        <Button type="submit" color="blue">Save Employee</Button>
       </form>
     </div>
   );
 };
 
 export default EmployeeForm;
-
