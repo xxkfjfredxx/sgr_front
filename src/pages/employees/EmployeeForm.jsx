@@ -1,11 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { Button, Input, Typography, Select, Option } from '@material-tailwind/react';
+import React, { useState } from 'react';
+import { Button, Input, Typography, Select, Option, Spinner } from '@material-tailwind/react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
+import { useCatalogs } from '@/hooks/useCatalogs';
 
 const EmployeeForm = () => {
   const navigate = useNavigate();
+  const { positions, workAreas, companies, loading, error } = useCatalogs();
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -27,31 +29,6 @@ const EmployeeForm = () => {
     company: '',
   });
 
-  const [positions, setPositions] = useState([]);
-  const [workAreas, setWorkAreas] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCatalogs = async () => {
-      try {
-        const [posRes, areaRes, compRes] = await Promise.all([
-          api.get('/positions/'),
-          api.get('/work-areas/'),
-          api.get('/companies/'),
-        ]);
-        setPositions(posRes.data);
-        setWorkAreas(areaRes.data);
-        setCompanies(compRes.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error loading catalogs:', error);
-        setLoading(false);
-      }
-    };
-    fetchCatalogs();
-  }, []);
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -67,6 +44,7 @@ const EmployeeForm = () => {
       navigate('/dashboard/employees');
     } catch (error) {
       console.error('Error creating employee:', error);
+      alert('There was an error creating the employee.');
     }
   };
 
@@ -75,6 +53,19 @@ const EmployeeForm = () => {
       <Typography variant="h4" color="blue-gray" className="mb-4">
         Create New Employee
       </Typography>
+
+      {loading && (
+        <div className="flex items-center gap-2 mb-4 text-blue-600">
+          <Spinner className="h-5 w-5" /> Loading catalogs...
+        </div>
+      )}
+
+      {error && (
+        <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 text-sm mb-4">
+          ⚠️ Error loading catalogs: {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required />
         <Input label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required />
@@ -120,24 +111,22 @@ const EmployeeForm = () => {
           <Option value="6">6 - High</Option>
         </Select>
 
-        {!loading && (
+        {/* Selects de catálogos cargados dinámicamente */}
+        {!loading && !error && (
           <>
             <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData({ ...formData, position: val })}>
-             
               {positions.map((pos) => (
                 <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
               ))}
             </Select>
 
             <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData({ ...formData, work_area: val })}>
-            
               {workAreas.map((area) => (
                 <Option key={area.id} value={String(area.id)}>{area.name}</Option>
               ))}
             </Select>
 
             <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData({ ...formData, company: val })}>
-              
               {companies.map((comp) => (
                 <Option key={comp.id} value={String(comp.id)}>{comp.name}</Option>
               ))}

@@ -1,24 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@material-tailwind/react';
+import React from 'react';
+import { Button, Spinner } from '@material-tailwind/react';
 import { useNavigate } from 'react-router-dom';
-import api from '@/services/api';
+import { useEmployees } from '@/hooks/useEmployees';
 
 const EmployeeList = () => {
-  const [employees, setEmployees] = useState([]);
+  const { employees, loading, error } = useEmployees();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await api.get('/employees/');
-      setEmployees(response.data);
-    } catch (error) {
-      console.error('Error loading employees:', error);
-    }
-  };
 
   const handleAddEmployee = () => {
     navigate('/employees/create');
@@ -31,33 +18,50 @@ const EmployeeList = () => {
         <Button onClick={handleAddEmployee} color="blue">+ Add Employee</Button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="px-6 py-3">Name</th>
-              <th className="px-6 py-3">Active</th>
-              <th className="px-6 py-3">Start Date</th>
-              <th className="px-6 py-3">Courses Up to Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map((employee) => (
-              <tr key={employee.id} className="border-t">
-                <td className="px-6 py-3">{employee.first_name} {employee.last_name}</td>
-                <td className="px-6 py-3">{employee.is_active ? 'Yes' : 'No'}</td>
-                <td className="px-6 py-3">{employee.start_date || '-'}</td>
-                <td className="px-6 py-3">{employee.courses_up_to_date ? '✅' : '❌'}</td>
+      {/* Spinner de carga */}
+      {loading && (
+        <div className="text-center py-6">
+          <Spinner className="h-6 w-6" /> Loading employees...
+        </div>
+      )}
+
+      {/* Mostrar error si ocurre */}
+      {!loading && error && (
+        <div className="text-center py-6 text-red-600 font-medium bg-red-50 border border-red-200 rounded-md p-4">
+          ⚠️ Error loading employees: {error}
+        </div>
+      )}
+
+      {/* Tabla cuando hay datos */}
+      {!loading && !error && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded-lg shadow">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="px-6 py-3">Name</th>
+                <th className="px-6 py-3">Active</th>
+                <th className="px-6 py-3">Start Date</th>
+                <th className="px-6 py-3">Courses Up to Date</th>
               </tr>
-            ))}
-            {employees.length === 0 && (
-              <tr>
-                <td colSpan="4" className="px-6 py-3 text-center text-gray-500">No employees registered.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {employees.map((employee) => (
+                <tr key={employee.id} className="border-t">
+                  <td className="px-6 py-3">{employee.first_name} {employee.last_name}</td>
+                  <td className="px-6 py-3">{employee.is_active ? 'Yes' : 'No'}</td>
+                  <td className="px-6 py-3">{employee.start_date || '-'}</td>
+                  <td className="px-6 py-3">{employee.courses_up_to_date ? '✅' : '❌'}</td>
+                </tr>
+              ))}
+              {employees.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="px-6 py-3 text-center text-gray-500">No employees registered.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

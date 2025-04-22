@@ -11,7 +11,8 @@ import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 import { EmployeeList, EmployeeForm } from "@/pages/employees";
 import { EmploymentLinkForm, EmploymentLinkList } from "@/pages/employment-links";
-
+import EmployeeDocumentsPage from '@/pages/employees/EmployeeDocumentsPage';
+import EmployeeDocumentsAdminPage from "@/pages/employees/EmployeeDocumentsAdminPage";
 
 
 const icon = {
@@ -33,6 +34,18 @@ export const routes = [
         name: "employees",
         path: "/employees",
         element: <EmployeeList />,
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "employee documents",
+        path: "/employees/:id/documents",
+        element: <EmployeeDocumentsPage />,
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "upload docs",
+        path: "/employees/documents-upload",
+        element: <EmployeeDocumentsAdminPage />,
       },
       {
         icon: <PlusIcon {...icon} />,
