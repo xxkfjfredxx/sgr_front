@@ -13,7 +13,7 @@ import { EmployeeList, EmployeeForm } from "@/pages/employees";
 import { EmploymentLinkForm, EmploymentLinkList } from "@/pages/employment-links";
 import EmployeeDocumentsPage from '@/pages/employees/EmployeeDocumentsPage';
 import EmployeeDocumentsAdminPage from "@/pages/employees/EmployeeDocumentsAdminPage";
-
+import IndicatorDashboard from "@/pages/dashboard/IndicatorDashboard";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -29,6 +29,12 @@ export const routes = [
         path: "/home",
         element: <Home />,
       },
+      {
+        icon: <TableCellsIcon {...icon} />,
+        name: "SST indicators",
+        path: "/indicators",
+        element: <IndicatorDashboard />,
+      },      
       {
         icon: <UserCircleIcon {...icon} />,
         name: "employees",
