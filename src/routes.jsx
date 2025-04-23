@@ -14,6 +14,7 @@ import { EmploymentLinkForm, EmploymentLinkList } from "@/pages/employment-links
 import EmployeeDocumentsPage from '@/pages/employees/EmployeeDocumentsPage';
 import EmployeeDocumentsAdminPage from "@/pages/employees/EmployeeDocumentsAdminPage";
 import IndicatorDashboard from "@/pages/dashboard/IndicatorDashboard";
+import MedicalExamSelfPage from "@/pages/occupational-health/MedicalExamSelfPage";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -34,7 +35,19 @@ export const routes = [
         name: "SST indicators",
         path: "/indicators",
         element: <IndicatorDashboard />,
-      },      
+      }, 
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "medical-exams",
+        path: "/my-medical-exams",
+        element: <MedicalExamSelfPage />,
+      },     
+      {
+        icon: <PlusIcon {...icon} />,
+        name: "add employee",
+        path: "/create-employee",
+        element: <EmployeeForm />,
+      },
       {
         icon: <UserCircleIcon {...icon} />,
         name: "employees",
@@ -44,31 +57,25 @@ export const routes = [
       {
         icon: <UserCircleIcon {...icon} />,
         name: "employee documents",
-        path: "/employees/:id/documents",
+        path: "/my-documents",
         element: <EmployeeDocumentsPage />,
       },
       {
         icon: <UserCircleIcon {...icon} />,
         name: "upload docs",
-        path: "/employees/documents-upload",
+        path: "/documents-upload",
         element: <EmployeeDocumentsAdminPage />,
       },
       {
         icon: <PlusIcon {...icon} />,
-        name: "add employee",
-        path: "/employees/create",
-        element: <EmployeeForm />,
-      },
-      {
-        icon: <PlusIcon {...icon} />,
         name: "add employment link",
-        path: "/employment-links/create",
+        path: "/employment-links-create",
         element: <EmploymentLinkForm />,
       },
       {
         icon: <TableCellsIcon {...icon} />,
         name: "employment links",
-        path: "/employment-links",
+        path: "/employments-link",
         element: <EmploymentLinkList />,
       },
       {

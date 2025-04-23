@@ -8,7 +8,7 @@ const EmployeeList = () => {
   const navigate = useNavigate();
 
   const handleAddEmployee = () => {
-    navigate('/employees/create');
+    navigate('/dashboard/create-employee');
   };
 
   return (

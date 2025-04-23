@@ -1,6 +1,5 @@
-// src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
-import api from '@/services/api'
+import api from '@/services/api';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
@@ -12,16 +11,29 @@ function Login() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/home');
+      navigate('/dashboard/home');
     }
   }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
     try {
       const response = await api.post('login/', { username, password });
-      localStorage.setItem('token', response.data.token);
+      const { token, user } = response.data;
+
+      localStorage.setItem('token', token);
+      if (user) {
+        localStorage.setItem('employeeId', user.employee_id ?? '');
+        localStorage.setItem('userId', user.id ?? '');
+        localStorage.setItem('username', user.username ?? '');
+        localStorage.setItem('email', user.email ?? '');
+        localStorage.setItem('role', user.role ?? '');
+        localStorage.setItem('isStaff', String(user.is_staff ?? false));
+        localStorage.setItem('isSuperuser', String(user.is_superuser ?? false));
+      }
+
       navigate('/dashboard/home');
     } catch (error) {
       console.log(error);

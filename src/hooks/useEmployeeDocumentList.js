@@ -8,6 +8,9 @@ export function useEmployeeDocumentList(employeeId) {
 
   const fetchDocuments = async () => {
     setLoading(true);
+    setError(null);
+    setDocuments([]); // 👈 Limpia antes de recargar
+    if (!employeeId) return;
     try {
       const res = await api.get(`/documents/?employee=${employeeId}`);
       setDocuments(res.data);
@@ -20,15 +23,20 @@ export function useEmployeeDocumentList(employeeId) {
   };
 
   useEffect(() => {
-    if (!employeeId) return; // ✅ prevenir llamada inválida
-  
+    if (!employeeId) {
+      setDocuments([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setError(null);
+    setDocuments([]); // 👈 Limpia docs viejos antes de nueva búsqueda
     api.get(`/documents/?employee=${employeeId}`)
       .then((res) => setDocuments(res.data))
-      .catch((err) => setError(err.message))
+      .catch((err) => setError(err.response?.data?.detail || err.message))
       .finally(() => setLoading(false));
   }, [employeeId]);
-  
+
   return { documents, loading, error, refetch: fetchDocuments };
 }
-
