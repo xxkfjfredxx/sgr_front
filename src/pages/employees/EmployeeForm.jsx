@@ -1,88 +1,115 @@
-import React, { useState } from 'react';
-import { Button, Input, Typography, Select, Option, Spinner } from '@material-tailwind/react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {
+  Button,
+  Input,
+  Typography,
+  Select,
+  Option,
+  Spinner,
+} from '@material-tailwind/react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/services/api';
 import { useCatalogs } from '@/hooks/useCatalogs';
 
-const EmployeeForm = () => {
+export default function EmployeeForm() {
   const navigate = useNavigate();
-  const { positions = [], workAreas = [], companies = [], loading, error } = useCatalogs();
+  const { id } = useParams();           // captura `:id` de /dashboard/employees/:id/edit
+  const isEditing = Boolean(id);
+
+  const { positions = [], workAreas = [], companies = [], loading: loadingCatalogs, error: errorCatalogs } = useCatalogs();
 
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    document: '',
-    is_active: true,
-    birth_date: '',
-    gender: '',
-    eps: '',
-    afp: '',
-    education: '',
-    marital_status: '',
-    emergency_contact: '',
-    phone_contact: '',
-    address: '',
-    ethnicity: '',
-    socioeconomic_stratum: '',
-    position: '',
-    work_area: '',
-    company: '',
+    first_name: '', last_name: '', document: '',
+    is_active: true, birth_date: '', gender: '',
+    eps: '', afp: '', education: '',
+    marital_status: '', emergency_contact: '', phone_contact: '',
+    address: '', ethnicity: '', socioeconomic_stratum: '',
+    position: '', work_area: '', company: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    setLoading(true);
+    api.get(`/employees/${id}/`)
+      .then(({ data }) => {
+        setFormData({
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          document: data.document || '',
+          is_active: data.is_active ?? true,
+          birth_date: data.birth_date || '',
+          gender: data.gender || '',
+          eps: data.eps || '',
+          afp: data.afp || '',
+          education: data.education || '',
+          marital_status: data.marital_status || '',
+          emergency_contact: data.emergency_contact || '',
+          phone_contact: data.phone_contact || '',
+          address: data.address || '',
+          ethnicity: data.ethnicity || '',
+          socioeconomic_stratum: data.socioeconomic_stratum || '',
+          position: data.position?.toString() || '',
+          work_area: data.work_area?.toString() || '',
+          company: data.company?.toString() || '',
+        });
+      })
+      .catch(() => setError('Error cargando datos del empleado'))
+      .finally(() => setLoading(false));
+  }, [id, isEditing]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
     try {
-      await api.post('/employees/', formData);
+      if (isEditing) {
+        await api.put(`/employees/${id}/`, formData);
+      } else {
+        await api.post('/employees/', formData);
+      }
       navigate('/dashboard/employees');
-    } catch (error) {
-      console.error('Error creating employee:', error);
-      alert('There was an error creating the employee.');
+    } catch {
+      setError('Hubo un error guardando el empleado');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <Typography variant="h4" color="blue-gray" className="mb-4">
-        Create New Employee
+        {isEditing ? 'Editar Empleado' : 'Crear Empleado'}
       </Typography>
 
-      {loading && (
-        <div className="flex items-center gap-2 mb-4 text-blue-600">
-          <Spinner className="h-5 w-5" /> Loading catalogs...
-        </div>
-      )}
-
-      {error && (
-        <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 text-sm mb-4">
-          ⚠️ Error loading catalogs: {error}
-        </div>
-      )}
+      {loadingCatalogs && <div className="flex items-center gap-2 mb-4 text-blue-600"><Spinner className="h-5 w-5" /> Cargando catálogos...</div>}
+      {errorCatalogs && <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">⚠️ Error catálogos: {errorCatalogs}</div>}
+      {loading && <div className="flex items-center gap-2 mb-4 text-blue-600"><Spinner className="h-5 w-5" /> Procesando...</div>}
+      {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">⚠️ {error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required />
-        <Input label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required />
-        <Input label="Document" name="document" value={formData.document} onChange={handleChange} required />
-        <Input label="Birth Date" name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} />
+        <Input label="First Name"        name="first_name" value={formData.first_name} onChange={handleChange} required />
+        <Input label="Last Name"         name="last_name"  value={formData.last_name}  onChange={handleChange} required />
+        <Input label="Document"          name="document"   value={formData.document}   onChange={handleChange} required />
+        <Input label="Birth Date"        name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} />
 
-        <Select label="Gender" value={formData.gender} onChange={(val) => setFormData({ ...formData, gender: val })}>
+        <Select label="Gender" value={formData.gender} onChange={(val) => setFormData((f) => ({ ...f, gender: val }))}>
           <Option value="Male">Male</Option>
           <Option value="Female">Female</Option>
           <Option value="Other">Other</Option>
         </Select>
 
-        <Input label="EPS" name="eps" value={formData.eps} onChange={handleChange} />
-        <Input label="AFP" name="afp" value={formData.afp} onChange={handleChange} />
-        <Input label="Education" name="education" value={formData.education} onChange={handleChange} />
+        <Input label="EPS"                name="eps"        value={formData.eps}        onChange={handleChange} />
+        <Input label="AFP"                name="afp"        value={formData.afp}        onChange={handleChange} />
+        <Input label="Education"          name="education"  value={formData.education}  onChange={handleChange} />
 
-        <Select label="Marital Status" value={formData.marital_status} onChange={(val) => setFormData({ ...formData, marital_status: val })}>
+        <Select label="Marital Status" value={formData.marital_status} onChange={(val) => setFormData((f) => ({ ...f, marital_status: val }))}>
           <Option value="Single">Single</Option>
           <Option value="Married">Married</Option>
           <Option value="Divorced">Divorced</Option>
@@ -90,10 +117,10 @@ const EmployeeForm = () => {
         </Select>
 
         <Input label="Emergency Contact" name="emergency_contact" value={formData.emergency_contact} onChange={handleChange} />
-        <Input label="Phone Contact" name="phone_contact" value={formData.phone_contact} onChange={handleChange} />
-        <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
+        <Input label="Phone Contact"     name="phone_contact"    value={formData.phone_contact}    onChange={handleChange} />
+        <Input label="Address"           name="address"          value={formData.address}          onChange={handleChange} />
 
-        <Select label="Ethnicity" value={formData.ethnicity} onChange={(val) => setFormData({ ...formData, ethnicity: val })}>
+        <Select label="Ethnicity" value={formData.ethnicity} onChange={(val) => setFormData((f) => ({ ...f, ethnicity: val }))}>
           <Option value="None">None</Option>
           <Option value="Afro-Colombian">Afro-Colombian</Option>
           <Option value="Indigenous">Indigenous</Option>
@@ -102,7 +129,7 @@ const EmployeeForm = () => {
           <Option value="Other">Other</Option>
         </Select>
 
-        <Select label="Socioeconomic Stratum" value={formData.socioeconomic_stratum} onChange={(val) => setFormData({ ...formData, socioeconomic_stratum: val })}>
+        <Select label="Socioeconomic Stratum" value={formData.socioeconomic_stratum} onChange={(val) => setFormData((f) => ({ ...f, socioeconomic_stratum: val }))}>
           <Option value="1">1 - Very Low</Option>
           <Option value="2">2 - Low</Option>
           <Option value="3">3 - Medium Low</Option>
@@ -111,40 +138,39 @@ const EmployeeForm = () => {
           <Option value="6">6 - High</Option>
         </Select>
 
-        {/* Selects dinámicos protegidos */}
-        {Array.isArray(positions) && positions.length > 0 && (
-          <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData({ ...formData, position: val })}>
-            {positions.map((pos) => pos && (
+        {positions.length > 0 && (
+          <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData((f) => ({ ...f, position: val }))}>
+            {positions.map((pos) => (
               <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
             ))}
           </Select>
         )}
 
-        {Array.isArray(workAreas) && workAreas.length > 0 && (
-          <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData({ ...formData, work_area: val })}>
-            {workAreas.map((area) => area && (
+        {workAreas.length > 0 && (
+          <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData((f) => ({ ...f, work_area: val }))}>
+            {workAreas.map((area) => (
               <Option key={area.id} value={String(area.id)}>{area.name}</Option>
             ))}
           </Select>
         )}
 
-        {Array.isArray(companies) && companies.length > 0 && (
-          <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData({ ...formData, company: val })}>
-            {companies.map((comp) => comp && (
+        {companies.length > 0 && (
+          <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData((f) => ({ ...f, company: val }))}>
+            {companies.map((comp) => (
               <Option key={comp.id} value={String(comp.id)}>{comp.name}</Option>
             ))}
           </Select>
         )}
 
         <div className="flex items-center gap-2">
-          <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} />
+          <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} id="is_active" />
           <label htmlFor="is_active">Active</label>
         </div>
 
-        <Button type="submit" color="blue">Save Employee</Button>
+        <Button type="submit" color="blue" disabled={loading}>
+          {isEditing ? 'Actualizar Empleado' : 'Crear Empleado'}
+        </Button>
       </form>
     </div>
   );
-};
-
-export default EmployeeForm;
+}
