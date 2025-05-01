@@ -7,11 +7,26 @@ import EmployeeDocumentForm from "@/components/EmployeeDocumentForm";
 import DocumentGallery from "@/components/DocumentGallery";
 
 export default function EmployeeDocumentsAdminPage() {
+  // Estados
   const [employees, setEmployees] = useState([]);
   const [loadingEmps, setLoadingEmps] = useState(true);
   const [errorEmps, setErrorEmps] = useState(null);
   const [selectedId, setSelectedId] = useState("");
 
+  // Cálculo de edad a partir de birth_date (YYYY-MM-DD)
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return "";
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Hook para los documentos del empleado seleccionado
   const {
     documents,
     loading: loadingDocs,
@@ -19,12 +34,12 @@ export default function EmployeeDocumentsAdminPage() {
     refetch,
   } = useEmployeeDocumentList(selectedId);
 
+  // Carga inicial de empleados y restauración de selección
   useEffect(() => {
     setLoadingEmps(true);
     api
       .get("/employees/")
       .then((res) => {
-        console.log("Employees payload:", res.data);
         const payload = res.data;
         const list = Array.isArray(payload)
           ? payload
@@ -32,6 +47,12 @@ export default function EmployeeDocumentsAdminPage() {
           ? payload.results
           : [];
         setEmployees(list);
+
+        // Restaurar selección guardada
+        const saved = localStorage.getItem("selectedEmployeeId");
+        if (saved && list.some((e) => String(e.id) === saved)) {
+          setSelectedId(saved);
+        }
       })
       .catch((err) => {
         const status = err.response?.status;
@@ -42,6 +63,15 @@ export default function EmployeeDocumentsAdminPage() {
         setLoadingEmps(false);
       });
   }, []);
+
+  // Al cambiar selección, persiste en localStorage
+  const handleSelect = (val) => {
+    setSelectedId(val);
+    localStorage.setItem("selectedEmployeeId", val);
+  };
+
+  // Encontrar el objeto del empleado seleccionado
+  const employeeSelected = employees.find((e) => String(e.id) === selectedId);
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -60,9 +90,10 @@ export default function EmployeeDocumentsAdminPage() {
         </div>
       ) : (
         <Select
+          key={`${employees.length}-${selectedId}`} 
           label="Selecciona empleado"
           value={selectedId}
-          onChange={(val) => setSelectedId(val)}
+          onChange={handleSelect}
         >
           <Option value="">— Selecciona empleado —</Option>
           {employees.map((emp) => (
@@ -73,8 +104,22 @@ export default function EmployeeDocumentsAdminPage() {
         </Select>
       )}
 
-      {/* FORMULARIO Y GALERÍA */}
-      {selectedId && (
+      {/* DATOS DEL EMPLEADO SELECCIONADO */}
+      {employeeSelected && (
+        <Typography variant="h6" color="blue-gray" className="mt-2">
+          Nombre:{" "}
+          <strong>
+            {employeeSelected.first_name} {employeeSelected.last_name}
+          </strong>
+          <br />
+          Documento: <strong>{employeeSelected.document}</strong>
+          <br />
+          Edad: <strong>{calculateAge(employeeSelected.birth_date)} años</strong>
+        </Typography>
+      )}
+
+      {/* FORMULARIO + GALERÍA (solo si hay empleado seleccionado) */}
+      {employeeSelected && (
         <>
           <EmployeeDocumentForm
             employeeId={selectedId}
