@@ -9,6 +9,7 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
+import MedicalExamsPage       from '@/pages/employees/MedicalExamsPage';
 
 const DashboardPage           = lazy(() => import("@/pages/dashboard/Dashboard.jsx"));
 const Profile                 = lazy(() => import("@/pages/dashboard/Profile.jsx"));
@@ -26,8 +27,8 @@ const EmployeeDocumentsAdmin  = lazy(() => import("@/pages/employees/EmployeeDoc
 const MedicalExamSelfPage     = lazy(() => import("@/pages/occupational-health/MedicalExamSelfPage.jsx"));
 const ActivityDetail          = lazy(() => import("@/pages/activities/ActivityDetail.jsx"));
 
-const SignIn                  = lazy(() => import("@/pages/auth/SignIn.jsx"));
-const SignUp                  = lazy(() => import("@/pages/auth/SignUp.jsx"));
+const SignIn                  = lazy(() => import("@/pages/auth/sign-in"));
+const SignUp                  = lazy(() => import("@/pages/auth/sign-up"));
 
 const icon = { className: "w-5 h-5 text-inherit" };
 
@@ -43,6 +44,8 @@ export const routes = [
       // **Empleados** (ahora sin “/” al principio)
       { icon: <PlusIcon {...icon}/>,        name: "Crear Empleado",    path: "employees/create",    element: <EmployeeForm/> },
       { icon: <UserCircleIcon {...icon}/>,  name: "Lista Empleados",    path: "employees",           element: <EmployeeList/> },
+      { path: '/employees/:id/documents', element: <EmployeeDocumentsPage /> },
+      { path: '/employees/:id/medical-exams', element: <MedicalExamsPage /> },
       { icon: <UserCircleIcon {...icon}/>,  name: "Editar Empleado",    path: "employees/:id/edit",  element: <EmployeeForm/> },
 
       // Documentos

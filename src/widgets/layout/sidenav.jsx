@@ -2,12 +2,7 @@ import React, { useTransition } from "react";
 import PropTypes from "prop-types";
 import { useNavigate, useLocation } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  Avatar,
-  Button,
-  IconButton,
-  Typography,
-} from "@material-tailwind/react";
+import { Avatar, Button, IconButton, Typography } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 
 export function Sidenav({ brandImg, brandName, routes }) {
@@ -37,7 +32,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
-            {brandName}
+            {brandName || ""}
           </Typography>
         </div>
         <IconButton
@@ -54,25 +49,24 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
       {/* Menu */}
       <div className="m-4 overflow-y-auto h-[calc(100vh-180px)] pr-1">
-        {routes.map(({ layout, title, pages }, section) => (
-          <ul key={section} className="mb-6">
+        {routes.map(({ layout, title, pages }, sectionIndex) => (
+          <ul key={`section-${sectionIndex}`} className="mb-6">
             {title && (
-              <li className="mx-3.5 mb-2">
+              <li className="mx-3.5 mb-2" key={`title-${sectionIndex}`}>
                 <Typography
                   variant="small"
                   color={sidenavType === "dark" ? "white" : "blue-gray"}
                   className="font-black uppercase opacity-75"
                 >
-                  {title}
+                  {title || ""}
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }) => {
-              // Construir la ruta correctamente con slash
+            {pages.map(({ icon, name, path }, pageIndex) => {
               const to = path ? `/${layout}/${path}` : `/${layout}`;
               const isActive = location.pathname === to;
               return (
-                <li key={name} className="mb-1">
+                <li key={`item-${sectionIndex}-${pageIndex}-${name}`} className="mb-1">
                   <Button
                     onClick={() =>
                       startTransition(() => {
@@ -88,7 +82,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                   >
                     {icon}
                     <Typography color="inherit" className="font-medium">
-                      {name}
+                      {name || ""}
                     </Typography>
                     {isPending && isActive && (
                       <span className="text-xs text-white ml-auto">…</span>
