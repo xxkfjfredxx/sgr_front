@@ -9,10 +9,17 @@ export function useEmployees() {
 
   useEffect(() => {
     api
-      .get("/employees/")
-      .then((res) => {
-        setEmployees(Array.isArray(res.data.results) ? res.data.results : []);
-      })
+       api.get('/employees/')
+         .then((res) => {
+           // si viene paginado, usar .results; si ya viene plano, usarlo directamente
+           const payload = res.data;
+           const list =
+             Array.isArray(payload) ?
+               payload :
+               // en tu API DRF seguro está en payload.results
+               payload.results || [];
+           setEmployees(list);
+         })
       .catch((err) => {
         setError(err.response?.data?.detail || err.message);
         setEmployees([]);

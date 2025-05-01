@@ -1,62 +1,98 @@
 // src/pages/employees/EmployeeDocumentsAdminPage.jsx
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Typography, Select, Option, Spinner } from "@material-tailwind/react";
+import api from "@/services/api";
+import { useEmployeeDocumentList } from "@/hooks/useEmployeeDocumentList";
 import EmployeeDocumentForm from "@/components/EmployeeDocumentForm";
 import DocumentGallery from "@/components/DocumentGallery";
-import api from "@/services/api";
-import { Typography } from "@material-tailwind/react";
-import { useEmployees } from "@/hooks/useEmployees";
 
 export default function EmployeeDocumentsAdminPage() {
-  const { employeeId } = useParams();
-  const { employees, loading: loadingEmps, error: errorEmps } = useEmployees();
-  const [documents, setDocuments] = useState([]);
-  const [loadingDocs, setLoadingDocs] = useState(true);
+  const [employees, setEmployees] = useState([]);
+  const [loadingEmps, setLoadingEmps] = useState(true);
+  const [errorEmps, setErrorEmps] = useState(null);
+  const [selectedId, setSelectedId] = useState("");
 
-  const loadDocuments = () => {
-    if (!employeeId) {
-      setDocuments([]);
-      setLoadingDocs(false);
-      return;
-    }
-    setLoadingDocs(true);
+  const {
+    documents,
+    loading: loadingDocs,
+    error: errorDocs,
+    refetch,
+  } = useEmployeeDocumentList(selectedId);
+
+  useEffect(() => {
+    setLoadingEmps(true);
     api
-      .get("/documents/", { params: { employee: employeeId } })
+      .get("/employees/")
       .then((res) => {
-        setDocuments(Array.isArray(res.data.results) ? res.data.results : []);
+        console.log("Employees payload:", res.data);
+        const payload = res.data;
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload.results)
+          ? payload.results
+          : [];
+        setEmployees(list);
       })
-      .catch(() => {
-        setDocuments([]);
+      .catch((err) => {
+        const status = err.response?.status;
+        const msg = err.response?.data?.detail || err.message;
+        setErrorEmps(`(${status}) ${msg}`);
       })
-      .finally(() => setLoadingDocs(false));
-  };
-
-  useEffect(loadDocuments, [employeeId]);
-
-  if (loadingEmps) {
-    return <Typography>Cargando empleados…</Typography>;
-  }
-  if (errorEmps) {
-    return <Typography color="red">{errorEmps}</Typography>;
-  }
-
-  const employee = employees.find((e) => e.id.toString() === employeeId);
+      .finally(() => {
+        setLoadingEmps(false);
+      });
+  }, []);
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow">
-      <Typography variant="h4" className="mb-4">
-        Documentos de {employee ? `${employee.first_name} ${employee.last_name}` : "Empleado"}
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <Typography variant="h4" color="blue-gray">
+        Adjuntar documentos a un empleado
       </Typography>
 
-      <EmployeeDocumentForm
-        employeeId={employeeId}
-        onUploadSuccess={loadDocuments}
-      />
-
-      {loadingDocs ? (
-        <Typography className="mt-4">Cargando documentos…</Typography>
+      {/* SELECT DE EMPLEADOS */}
+      {loadingEmps ? (
+        <div className="flex items-center gap-2 text-blue-600">
+          <Spinner className="h-5 w-5" /> Cargando empleados…
+        </div>
+      ) : errorEmps ? (
+        <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md">
+          ⚠️ Error al cargar empleados: {errorEmps}
+        </div>
       ) : (
-        <DocumentGallery documents={documents} onDelete={loadDocuments} />
+        <Select
+          label="Selecciona empleado"
+          value={selectedId}
+          onChange={(val) => setSelectedId(val)}
+        >
+          <Option value="">— Selecciona empleado —</Option>
+          {employees.map((emp) => (
+            <Option key={emp.id} value={String(emp.id)}>
+              {emp.first_name} {emp.last_name}
+            </Option>
+          ))}
+        </Select>
+      )}
+
+      {/* FORMULARIO Y GALERÍA */}
+      {selectedId && (
+        <>
+          <EmployeeDocumentForm
+            employeeId={selectedId}
+            onUploadSuccess={refetch}
+          />
+
+          {loadingDocs ? (
+            <div className="flex items-center gap-2 text-blue-600">
+              <Spinner className="h-5 w-5" /> Cargando documentos…
+            </div>
+          ) : errorDocs ? (
+            <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 text-sm">
+              ⚠️ Error al cargar documentos: {errorDocs}
+            </div>
+          ) : (
+            <DocumentGallery documents={documents} onDelete={refetch} />
+          )}
+        </>
       )}
     </div>
   );
