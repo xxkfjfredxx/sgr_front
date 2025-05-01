@@ -20,44 +20,62 @@ export default function ActivityDetail() {
   const navigate = useNavigate();
   const { empresaId } = useContext(EmpresaContext);
 
+  // Si no hay ID, mostramos mensaje sin intentar petición
+  if (!id) {
+    return (
+      <div className="p-6 text-gray-600">
+        <Typography variant="h6">ID de actividad no proporcionado.</Typography>
+        <Button color="gray" onClick={() => navigate(ROUTES.DASHBOARD)} className="mt-4">
+          ← Volver
+        </Button>
+      </div>
+    );
+  }
+
   const { activity, loading, error, updateActivityStatus, refetch } =
     useActivity(id);
 
-  // form state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
-
-  // populate form when activity loads
-  useEffect(() => {
-    if (activity) {
-      setTitle(activity.title);
-      setDescription(activity.description);
-      setStatus(activity.status);
-    }
-  }, [activity]);
-
-  // if active company changes so that the activity no longer belongs, redirect back
+  // Si cambia la empresa y no pertenece a esta actividad, redirigir
   useEffect(() => {
     if (activity && empresaId && activity.company !== empresaId) {
       navigate(ROUTES.DASHBOARD, { replace: true });
     }
   }, [activity, empresaId, navigate]);
 
+  // Estado local para el formulario
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+
+  // Rellenar el formulario cuando llegue la actividad
+  useEffect(() => {
+    if (activity) {
+      setTitle(activity.title || "");
+      setDescription(activity.description || "");
+      setStatus(activity.status || "");
+    }
+  }, [activity]);
+
   if (loading) {
     return (
       <div className="p-6 text-blue-600 flex items-center gap-2">
-        <Spinner className="h-5 w-5" /> Cargando actividad...
+        <Spinner className="h-5 w-5" />
+        <Typography>Cargando actividad…</Typography>
       </div>
     );
   }
 
   if (error) {
+    // Asegurarnos de mostrar un string
+    const message = typeof error === 'string' ? error : error.message || 'Error desconocido';
     return (
-      <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-4">
-        {error}
+      <div className="p-6 text-red-600 bg-red-50 border border-red-200 rounded-md">
+        <Typography variant="h6">⚠️ {message}</Typography>
+        <Button color="gray" onClick={() => navigate(ROUTES.DASHBOARD)} className="mt-4">
+          ← Volver
+        </Button>
       </div>
     );
   }
@@ -65,7 +83,10 @@ export default function ActivityDetail() {
   if (!activity) {
     return (
       <div className="p-6 text-gray-600">
-        Actividad no encontrada o no accesible.
+        <Typography>Actividad no encontrada o no accesible.</Typography>
+        <Button color="gray" onClick={() => navigate(ROUTES.DASHBOARD)} className="mt-4">
+          ← Volver
+        </Button>
       </div>
     );
   }
@@ -78,8 +99,8 @@ export default function ActivityDetail() {
       setSaveMessage("✅ Cambios guardados exitosamente.");
       refetch();
     } catch (err) {
-      const msg = err.response?.data?.detail || err.message;
-      setSaveMessage(`❌ Error al guardar: ${msg}`);
+      const msg = err.response?.data?.detail || err.message || 'Error al guardar';
+      setSaveMessage(`❌ ${msg}`);
     } finally {
       setSaving(false);
     }

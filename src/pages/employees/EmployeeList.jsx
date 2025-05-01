@@ -43,7 +43,7 @@ export default function EmployeeList() {
           variant="gradient"
           color="white"
           className="flex items-center gap-2"
-          onClick={() => navigate("/dashboard/employees/create")}
+          onClick={() => navigate("create")}
         >
           <PlusIcon className="h-5 w-5" />
           Agregar Empleado
@@ -98,7 +98,7 @@ export default function EmployeeList() {
                     <Button
                       size="sm"
                       variant="text"
-                      onClick={() => navigate(`/dashboard/employees/${emp.id}/edit`)}
+                      onClick={() => navigate(`${emp.id}/edit`)}
                     >
                       Editar
                     </Button>

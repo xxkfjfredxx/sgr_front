@@ -1,4 +1,3 @@
-// src/widgets/layout/sidenav.jsx
 import React, { useTransition } from "react";
 import PropTypes from "prop-types";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -69,7 +68,8 @@ export function Sidenav({ brandImg, brandName, routes }) {
               </li>
             )}
             {pages.map(({ icon, name, path }) => {
-              const to = `/${layout}${path}`;
+              // Construir la ruta correctamente con slash
+              const to = path ? `/${layout}/${path}` : `/${layout}`;
               const isActive = location.pathname === to;
               return (
                 <li key={name} className="mb-1">
