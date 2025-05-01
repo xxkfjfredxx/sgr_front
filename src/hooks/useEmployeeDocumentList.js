@@ -9,33 +9,26 @@ export function useEmployeeDocumentList(employeeId) {
   const fetchDocuments = async () => {
     setLoading(true);
     setError(null);
-    setDocuments([]); // 👈 Limpia antes de recargar
-    if (!employeeId) return;
+    setDocuments([]);
+    if (!employeeId) {
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await api.get(`/documents/?employee=${employeeId}`);
-      setDocuments(res.data);
+      const res = await api.get(`/documents/`, { params: { employee: employeeId } });
+      // DRF devuelve paginación: results
+      const list = Array.isArray(res.data.results) ? res.data.results : [];
+      setDocuments(list);
     } catch (err) {
-      const msg = err.response?.data?.detail || err.message;
-      setError(msg);
+      setError(err.response?.data?.detail || err.message);
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!employeeId) {
-      setDocuments([]);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setDocuments([]); // 👈 Limpia docs viejos antes de nueva búsqueda
-    api.get(`/documents/?employee=${employeeId}`)
-      .then((res) => setDocuments(res.data))
-      .catch((err) => setError(err.response?.data?.detail || err.message))
-      .finally(() => setLoading(false));
+    fetchDocuments();
   }, [employeeId]);
 
   return { documents, loading, error, refetch: fetchDocuments };

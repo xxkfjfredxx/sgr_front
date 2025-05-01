@@ -1,5 +1,7 @@
+// src/widgets/layout/sidenav.jsx
+import React, { useTransition } from "react";
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   Avatar,
@@ -11,8 +13,12 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavColor, sidenavType, openSidenav } = controller;
-  const sidenavTypes = {
+  const { sidenavType, openSidenav, sidenavColor } = controller;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isPending, startTransition] = useTransition();
+
+  const sidenavStyles = {
     dark: "bg-gradient-to-br from-gray-800 to-gray-900",
     white: "bg-white shadow-sm",
     transparent: "bg-transparent",
@@ -20,21 +26,21 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
   return (
     <aside
-      className={`${sidenavTypes[sidenavType]} ${
+      className={`${sidenavStyles[sidenavType]} ${
         openSidenav ? "translate-x-0" : "-translate-x-80"
       } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-blue-gray-100`}
     >
-      <div
-        className={`relative`}
-      >
-        <Link to="/" className="py-6 px-8 text-center">
+      {/* Header */}
+      <div className="relative">
+        <div className="py-6 px-8 text-center">
+          <img src={brandImg} alt="logo" className="h-8 mx-auto mb-2" />
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
             {brandName}
           </Typography>
-        </Link>
+        </div>
         <IconButton
           variant="text"
           color="white"
@@ -46,11 +52,13 @@ export function Sidenav({ brandImg, brandName, routes }) {
           <XMarkIcon strokeWidth={2.5} className="h-5 w-5 text-white" />
         </IconButton>
       </div>
-      <div className="m-4">
-        {routes.map(({ layout, title, pages }, key) => (
-          <ul key={key} className="mb-4 flex flex-col gap-1">
+
+      {/* Menu */}
+      <div className="m-4 overflow-y-auto h-[calc(100vh-180px)] pr-1">
+        {routes.map(({ layout, title, pages }, section) => (
+          <ul key={section} className="mb-6">
             {title && (
-              <li className="mx-3.5 mt-4 mb-2">
+              <li className="mx-3.5 mb-2">
                 <Typography
                   variant="small"
                   color={sidenavType === "dark" ? "white" : "blue-gray"}
@@ -60,34 +68,35 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }) => (
-              <li key={name}>
-                <NavLink to={`/${layout}${path}`}>
-                  {({ isActive }) => (
-                    <Button
-                      variant={isActive ? "gradient" : "text"}
-                      color={
-                        isActive
-                          ? sidenavColor
-                          : sidenavType === "dark"
-                          ? "white"
-                          : "blue-gray"
-                      }
-                      className="flex items-center gap-4 px-4 capitalize"
-                      fullWidth
-                    >
-                      {icon}
-                      <Typography
-                        color="inherit"
-                        className="font-medium capitalize"
-                      >
-                        {name}
-                      </Typography>
-                    </Button>
-                  )}
-                </NavLink>
-              </li>
-            ))}
+            {pages.map(({ icon, name, path }) => {
+              const to = `/${layout}${path}`;
+              const isActive = location.pathname === to;
+              return (
+                <li key={name} className="mb-1">
+                  <Button
+                    onClick={() =>
+                      startTransition(() => {
+                        navigate(to);
+                        setOpenSidenav(dispatch, false);
+                      })
+                    }
+                    variant={isActive ? "gradient" : "text"}
+                    color={isActive ? sidenavColor : "blue-gray"}
+                    className="flex items-center gap-4 px-4 normal-case w-full"
+                    fullWidth
+                    disabled={isPending}
+                  >
+                    {icon}
+                    <Typography color="inherit" className="font-medium">
+                      {name}
+                    </Typography>
+                    {isPending && isActive && (
+                      <span className="text-xs text-white ml-auto">…</span>
+                    )}
+                  </Button>
+                </li>
+              );
+            })}
           </ul>
         ))}
       </div>
@@ -105,7 +114,5 @@ Sidenav.propTypes = {
   brandName: PropTypes.string,
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
-
-Sidenav.displayName = "/src/widgets/layout/sidnave.jsx";
 
 export default Sidenav;

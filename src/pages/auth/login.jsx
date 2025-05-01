@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ROUTES } from "@/configs/routes";
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("expired") === "1") {
+      setError("Tu sesión ha expirado o fue cerrada en otro dispositivo.");
+    }
+
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/dashboard/home');
+      navigate(ROUTES.DASHBOARD);
     }
-  }, [navigate]);
+  }, [navigate, location]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -34,7 +41,7 @@ function Login() {
         localStorage.setItem('isSuperuser', String(user.is_superuser ?? false));
       }
 
-      navigate('/dashboard/home');
+      navigate(ROUTES.DASHBOARD);
     } catch (error) {
       console.log(error);
       if (error.response && error.response.status === 401) {

@@ -1,3 +1,4 @@
+// src/layouts/dashboard.jsx
 import { Routes, Route } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
@@ -8,7 +9,10 @@ import {
   Footer,
 } from "@/widgets/layout";
 import routes from "@/routes";
-import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import {
+  useMaterialTailwindController,
+  setOpenConfigurator,
+} from "@/context";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -19,7 +23,9 @@ export function Dashboard() {
       <Sidenav
         routes={routes}
         brandImg={
-          sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
+          sidenavType === "dark"
+            ? "/img/logo-ct.png"
+            : "/img/logo-ct-dark.png"
         }
       />
       <div className="p-4 xl:ml-80">
@@ -39,7 +45,7 @@ export function Dashboard() {
             ({ layout, pages }) =>
               layout === "dashboard" &&
               pages.map(({ path, element }) => (
-                <Route exact path={path} element={element} />
+                <Route key={path} exact path={path} element={element} />
               ))
           )}
         </Routes>

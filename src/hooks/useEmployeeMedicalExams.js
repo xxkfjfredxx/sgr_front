@@ -1,33 +1,35 @@
-import { useState, useEffect } from 'react';
-import api from '@/services/api';
+// src/hooks/useEmployeeMedicalExams.js
+import { useState, useEffect } from "react";
+import api from "@/services/api";
 
+// Cambiado el nombre de la función para que coincida con la importación
 export function useEmployeeMedicalExams(employeeId) {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!employeeId) return;
-    setLoading(true);
-    api.get(`/occupational-health/medical-exams/?employee=${employeeId}`)
-      .then(res => setExams(res.data))
-      .catch(err => setError(err.response?.data?.detail || 'Error loading exams'))
-      .finally(() => setLoading(false));
+    const fetchExams = async () => {
+      if (!employeeId) {
+        setExams([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/medical-exams/", { params: { employee: employeeId } });
+        setExams(Array.isArray(res.data.results) ? res.data.results : []);
+      } catch (err) {
+        setError(err);
+        setExams([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExams();
   }, [employeeId]);
 
-  const uploadExam = async (formData) => {
-    setError(null);
-    try {
-      const res = await api.post('/occupational-health/medical-exams/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setExams(prev => [res.data, ...prev]);
-      return res;
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Error uploading exam');
-      throw err;
-    }
-  };
-
-  return { exams, loading, error, uploadExam, setExams };
+  return { exams, loading, error };
 }

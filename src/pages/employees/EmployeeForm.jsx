@@ -6,7 +6,7 @@ import { useCatalogs } from '@/hooks/useCatalogs';
 
 const EmployeeForm = () => {
   const navigate = useNavigate();
-  const { positions, workAreas, companies, loading, error } = useCatalogs();
+  const { positions = [], workAreas = [], companies = [], loading, error } = useCatalogs();
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -111,36 +111,33 @@ const EmployeeForm = () => {
           <Option value="6">6 - High</Option>
         </Select>
 
-        {/* Selects de catálogos cargados dinámicamente */}
-        {!loading && !error && (
-          <>
-            <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData({ ...formData, position: val })}>
-              {positions.map((pos) => (
-                <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
-              ))}
-            </Select>
+        {/* Selects dinámicos protegidos */}
+        {Array.isArray(positions) && positions.length > 0 && (
+          <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData({ ...formData, position: val })}>
+            {positions.map((pos) => pos && (
+              <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
+            ))}
+          </Select>
+        )}
 
-            <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData({ ...formData, work_area: val })}>
-              {workAreas.map((area) => (
-                <Option key={area.id} value={String(area.id)}>{area.name}</Option>
-              ))}
-            </Select>
+        {Array.isArray(workAreas) && workAreas.length > 0 && (
+          <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData({ ...formData, work_area: val })}>
+            {workAreas.map((area) => area && (
+              <Option key={area.id} value={String(area.id)}>{area.name}</Option>
+            ))}
+          </Select>
+        )}
 
-            <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData({ ...formData, company: val })}>
-              {companies.map((comp) => (
-                <Option key={comp.id} value={String(comp.id)}>{comp.name}</Option>
-              ))}
-            </Select>
-          </>
+        {Array.isArray(companies) && companies.length > 0 && (
+          <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData({ ...formData, company: val })}>
+            {companies.map((comp) => comp && (
+              <Option key={comp.id} value={String(comp.id)}>{comp.name}</Option>
+            ))}
+          </Select>
         )}
 
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="is_active"
-            checked={formData.is_active}
-            onChange={handleChange}
-          />
+          <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} />
           <label htmlFor="is_active">Active</label>
         </div>
 
