@@ -7,13 +7,11 @@ import EmployeeDocumentForm from "@/components/EmployeeDocumentForm";
 import DocumentGallery from "@/components/DocumentGallery";
 
 export default function EmployeeDocumentsAdminPage() {
-  // Estados
   const [employees, setEmployees] = useState([]);
   const [loadingEmps, setLoadingEmps] = useState(true);
   const [errorEmps, setErrorEmps] = useState(null);
   const [selectedId, setSelectedId] = useState("");
 
-  // Cálculo de edad a partir de birth_date (YYYY-MM-DD)
   const calculateAge = (birthDate) => {
     if (!birthDate) return "";
     const today = new Date();
@@ -26,7 +24,6 @@ export default function EmployeeDocumentsAdminPage() {
     return age;
   };
 
-  // Hook para los documentos del empleado seleccionado
   const {
     documents,
     loading: loadingDocs,
@@ -34,7 +31,6 @@ export default function EmployeeDocumentsAdminPage() {
     refetch,
   } = useEmployeeDocumentList(selectedId);
 
-  // Carga inicial de empleados y restauración de selección
   useEffect(() => {
     setLoadingEmps(true);
     api
@@ -48,7 +44,6 @@ export default function EmployeeDocumentsAdminPage() {
           : [];
         setEmployees(list);
 
-        // Restaurar selección guardada
         const saved = localStorage.getItem("selectedEmployeeId");
         if (saved && list.some((e) => String(e.id) === saved)) {
           setSelectedId(saved);
@@ -64,13 +59,11 @@ export default function EmployeeDocumentsAdminPage() {
       });
   }, []);
 
-  // Al cambiar selección, persiste en localStorage
   const handleSelect = (val) => {
     setSelectedId(val);
     localStorage.setItem("selectedEmployeeId", val);
   };
 
-  // Encontrar el objeto del empleado seleccionado
   const employeeSelected = employees.find((e) => String(e.id) === selectedId);
 
   return (
@@ -79,7 +72,6 @@ export default function EmployeeDocumentsAdminPage() {
         Adjuntar documentos a un empleado
       </Typography>
 
-      {/* SELECT DE EMPLEADOS */}
       {loadingEmps ? (
         <div className="flex items-center gap-2 text-blue-600">
           <Spinner className="h-5 w-5" /> Cargando empleados…
@@ -90,12 +82,10 @@ export default function EmployeeDocumentsAdminPage() {
         </div>
       ) : (
         <Select
-          key={`${employees.length}-${selectedId}`} 
           label="Selecciona empleado"
-          value={selectedId}
+          value={selectedId || ""}
           onChange={handleSelect}
         >
-          <Option value="">— Selecciona empleado —</Option>
           {employees.map((emp) => (
             <Option key={emp.id} value={String(emp.id)}>
               {emp.first_name} {emp.last_name}
@@ -104,13 +94,9 @@ export default function EmployeeDocumentsAdminPage() {
         </Select>
       )}
 
-      {/* DATOS DEL EMPLEADO SELECCIONADO */}
       {employeeSelected && (
         <Typography variant="h6" color="blue-gray" className="mt-2">
-          Nombre:{" "}
-          <strong>
-            {employeeSelected.first_name} {employeeSelected.last_name}
-          </strong>
+          Nombre: <strong>{employeeSelected.first_name} {employeeSelected.last_name}</strong>
           <br />
           Documento: <strong>{employeeSelected.document}</strong>
           <br />
@@ -118,7 +104,6 @@ export default function EmployeeDocumentsAdminPage() {
         </Typography>
       )}
 
-      {/* FORMULARIO + GALERÍA (solo si hay empleado seleccionado) */}
       {employeeSelected && (
         <>
           <EmployeeDocumentForm
