@@ -1,110 +1,147 @@
-import React, { useState } from 'react';
-import { Button, Input, Typography, Spinner } from '@material-tailwind/react';
-import { useEmployeeMedicalExams } from '@/hooks/useEmployeeMedicalExams';
+// src/pages/occupational-health/EmployeeMedicalExamForm.jsx
+import React, { useState } from "react";
+import {
+  Button,
+  Input,
+  Select,
+  Option,
+  Textarea,
+  Typography,
+  Alert,
+} from "@material-tailwind/react";
+import { useEmployeeMedicalExams } from "@/hooks/useEmployeeMedicalExams";
+import { useEmpresaActiva } from "@/hooks/useEmpresaActiva";
 
-const initialForm = {
-  exam_type: '',
-  date: '',
-  entity: '',
-  aptitude: '',
-  recommendations: '',
-  file: null,
-};
+export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess }) {
+  const { uploadExam } = useEmployeeMedicalExams(employeeId);
+  const { empresaActivaId } = useEmpresaActiva();
 
-const examTypeOptions = [
-  { value: '', label: 'Seleccionar tipo' },
-  { value: 'Ingreso', label: 'Ingreso' },
-  { value: 'Periódico', label: 'Periódico' },
-  { value: 'Retiro', label: 'Retiro' },
-];
+  const [form, setForm] = useState({
+    exam_type: "",
+    exam_phase: "",
+    sub_type: "",
+    risk_level: "",
+    date: "",
+    entity: "",
+    aptitude: "",
+    recommendations: "",
+    file: null,
+  });
 
-const aptitudeOptions = [
-  { value: '', label: 'Seleccionar aptitud' },
-  { value: 'Apto', label: 'Apto' },
-  { value: 'No apto', label: 'No apto' },
-];
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-const EmployeeMedicalExamForm = ({ employeeId }) => {
-  const { exams, loading, error, uploadExam } = useEmployeeMedicalExams(employeeId);
-  const [form, setForm] = useState(initialForm);
-  const [uploading, setUploading] = useState(false);
-  const [formError, setFormError] = useState('');
-
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setForm(f => ({
-      ...f,
+  const handleChange = ({ target }) => {
+    const { name, value, files } = target;
+    setForm((prev) => ({
+      ...prev,
       [name]: files ? files[0] : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError('');
+    setError(null);
+    setSuccess(false);
 
-    if (!form.exam_type || !form.date || !form.entity || !form.aptitude || !form.file) {
-      setFormError('Todos los campos obligatorios deben ser completados.');
+    if (!empresaActivaId) {
+      setError("No se ha seleccionado una empresa.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append('employee', employeeId);
-    Object.entries(form).forEach(([key, value]) => {
-      if (value) formData.append(key, value);
-    });
-
-    setUploading(true);
     try {
+      const formData = new FormData();
+      formData.append("employee", employeeId);
+      formData.append("company", empresaActivaId);
+      formData.append("exam_type", form.exam_type);
+      formData.append("exam_phase", form.exam_phase);
+      formData.append("sub_type", form.sub_type);
+      formData.append("risk_level", form.risk_level);
+      formData.append("date", form.date);
+      formData.append("entity", form.entity);
+      formData.append("aptitude", form.aptitude);
+      formData.append("recommendations", form.recommendations);
+      formData.append("file", form.file);
+
       await uploadExam(formData);
-      setForm(initialForm);
+      setSuccess(true);
+      if (typeof onUploadSuccess === "function") {
+        onUploadSuccess();
+      }
+
+      setForm({
+        exam_type: "",
+        exam_phase: "",
+        sub_type: "",
+        risk_level: "",
+        date: "",
+        entity: "",
+        aptitude: "",
+        recommendations: "",
+        file: null,
+      });
     } catch (err) {
-      // el error ya está gestionado en el hook
-    } finally {
-      setUploading(false);
+      setError("No se pudo subir el examen. Verifica los campos requeridos.");
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto p-6">
-      <Typography variant="h4" className="mb-6">Medical Exams</Typography>
-      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-        <div className="flex gap-4">
-          <select name="exam_type" value={form.exam_type} onChange={handleChange} className="p-2 border rounded w-full">
-            {examTypeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-          <Input type="date" name="date" label="Date" value={form.date} onChange={handleChange} />
-        </div>
-        <div className="flex gap-4">
-          <Input name="entity" label="Entity" value={form.entity} onChange={handleChange} />
-          <select name="aptitude" value={form.aptitude} onChange={handleChange} className="p-2 border rounded w-full">
-            {aptitudeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-        </div>
-        <Input name="recommendations" label="Recommendations" value={form.recommendations} onChange={handleChange} />
-        <Input type="file" name="file" label="Attach PDF" onChange={handleChange} />
-        <Button type="submit" color="blue" disabled={uploading || loading}>
-          {uploading ? <Spinner className="h-4 w-4" /> : 'Upload Exam'}
-        </Button>
-        {formError && <div className="text-red-600 text-sm mt-2">{formError}</div>}
-      </form>
-      <Typography variant="h5" className="mb-3">History</Typography>
-      {loading && <Spinner />}
-      {error && <div className="text-red-600">{error}</div>}
-      {exams.length === 0 && <div className="text-gray-500">No medical exams registered.</div>}
-      {exams.map(exam => (
-        <div key={exam.id} className="mb-3 p-4 border rounded bg-white shadow">
-          <Typography variant="h6">{exam.exam_type} - {exam.date}</Typography>
-          <Typography>Entity: {exam.entity} | Aptitude: {exam.aptitude}</Typography>
-          <Typography>Recommendations: {exam.recommendations || '-'}</Typography>
-          {exam.file && (
-            <a href={exam.file} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              View PDF
-            </a>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
+  if (!empresaActivaId) {
+    return (
+      <Alert color="blue" variant="outlined" className="my-4">
+        Debes seleccionar una empresa activa para registrar un examen médico.
+      </Alert>
+    );
+  }
 
-export default EmployeeMedicalExamForm;
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Typography variant="h6">Subir nuevo examen médico</Typography>
+
+      {error && <Alert color="red">{error}</Alert>}
+      {success && <Alert color="green">Examen subido correctamente.</Alert>}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input label="Tipo de Examen (general)" name="exam_type" value={form.exam_type} onChange={handleChange} required />
+
+        <Select label="Fase del Examen" value={form.exam_phase} onChange={(val) => setForm(prev => ({ ...prev, exam_phase: val }))} required>
+          <Option value="Ingreso">Ingreso</Option>
+          <Option value="Periódico">Periódico</Option>
+          <Option value="Retiro">Retiro</Option>
+        </Select>
+
+        <Select label="Subtipo de Examen" value={form.sub_type} onChange={(val) => setForm(prev => ({ ...prev, sub_type: val }))}>
+          <Option value="Audiometría">Audiometría</Option>
+          <Option value="Espirometría">Espirometría</Option>
+          <Option value="Visión">Visión</Option>
+          <Option value="Laboratorio">Laboratorio</Option>
+          <Option value="Presión arterial">Presión arterial</Option>
+          <Option value="Otro">Otro</Option>
+        </Select>
+
+        <Select label="Nivel de Riesgo" value={form.risk_level} onChange={(val) => setForm(prev => ({ ...prev, risk_level: val }))}>
+          <Option value="I">Bajo (I)</Option>
+          <Option value="II">Medio (II)</Option>
+          <Option value="III">Alto (III)</Option>
+          <Option value="IV">Crítico (IV)</Option>
+        </Select>
+
+        <Input label="Fecha" type="date" name="date" value={form.date} onChange={handleChange} required />
+        <Input label="Entidad" name="entity" value={form.entity} onChange={handleChange} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select label="¿Apto?" name="aptitude" value={form.aptitude} onChange={(val) => setForm(prev => ({ ...prev, aptitude: val }))}>
+          <Option value="Sí">Sí</Option>
+          <Option value="No">No</Option>
+        </Select>
+        <Input type="file" name="file" label="Archivo (PDF o imagen)" onChange={handleChange} required />
+      </div>
+
+      <Textarea label="Recomendaciones" name="recommendations" value={form.recommendations} onChange={handleChange} />
+
+      <div className="flex justify-end">
+        <Button type="submit" color="blue">Subir Examen</Button>
+      </div>
+    </form>
+  );
+}

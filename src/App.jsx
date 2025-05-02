@@ -1,15 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "@/components/PrivateRoute";
-import { Dashboard, Auth } from "@/layouts";
-import Login from '@/pages/auth/login';
+import { Dashboard, Auth } from "@/layouts";      // ✅ Dashboard y Auth vienen de layouts/index.js
+import Login from "@/pages/auth/login";
 
 function App() {
   return (
     <Routes>
-      <Route path="/dashboard/*" element={<PrivateRoute> <Dashboard /> </PrivateRoute>} />
+      <Route path="/dashboard/*" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/auth/*" element={<Auth />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      <Route path='/' element={<Login />} />
+      <Route path="/" element={<Login />} />
     </Routes>
   );
 }

@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import MedicalExamsPage       from '@/pages/employees/MedicalExamsPage';
 
-const DashboardPage           = lazy(() => import("@/pages/dashboard/Dashboard.jsx"));
+const DashboardPage           = lazy(() => import("@/pages/dashboard/CalendarDashboard.jsx"));
 const Profile                 = lazy(() => import("@/pages/dashboard/Profile.jsx"));
 const Tables                  = lazy(() => import("@/pages/dashboard/Tables.jsx"));
 const Notifications           = lazy(() => import("@/pages/dashboard/Notifications.jsx"));

@@ -1,5 +1,4 @@
-// src/layouts/dashboard.jsx
-import React from "react";
+import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
@@ -11,12 +10,14 @@ export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
 
-  // Solo las páginas que tengan layout === "dashboard"
-  const dashPages = routes.find((r) => r.layout === "dashboard").pages;
+  const dashPages = routes.find((r) => r.layout === "dashboard")?.pages || [];
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
-      <Sidenav routes={routes} brandImg={sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"} />
+      <Sidenav
+        routes={routes}
+        brandImg={sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"}
+      />
       <div className="p-4 xl:ml-80">
         <DashboardNavbar />
         <Configurator />
@@ -30,17 +31,17 @@ export function Dashboard() {
           <Cog6ToothIcon className="h-5 w-5" />
         </IconButton>
 
-        <Routes>
-          {dashPages.map(({ path, element }) =>
-            path === "" ? (
-              // /dashboard exact
-              <Route index element={element} key="dashboard-index" />
-            ) : (
-              // /dashboard/<path>
-              <Route path={path} element={element} key={path} />
-            )
-          )}
-        </Routes>
+        <Suspense fallback={<div className="p-4">Cargando módulo...</div>}>
+          <Routes>
+            {dashPages.map(({ path, element }) =>
+              path === "" ? (
+                <Route index element={element} key="dashboard-index" />
+              ) : (
+                <Route path={path} element={element} key={path} />
+              )
+            )}
+          </Routes>
+        </Suspense>
 
         <div className="text-blue-gray-600">
           <Footer />

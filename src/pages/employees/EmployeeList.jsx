@@ -1,4 +1,4 @@
-// src/pages/dashboard/tables.jsx
+// src/pages/employees/EmployeeList.jsx
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -7,8 +7,18 @@ import {
   Typography,
   Avatar,
   Button,
+  Input,
 } from "@material-tailwind/react";
-import { PlusIcon, DocumentIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";  // Importar iconos para Docs y Exámenes Médicos
+import {
+  PlusIcon,
+  DocumentIcon,
+  ClipboardDocumentListIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDoubleRightIcon,
+  ChevronDoubleLeftIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 
@@ -16,41 +26,81 @@ export default function EmployeeList() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [pendingSearch, setPendingSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchData = (page = currentPage, query = search) => {
     setLoading(true);
     api
-      .get("/employees/")
+      .get("/employees/", {
+        params: {
+          page,
+          search: query,
+        },
+      })
       .then((res) => {
-        const list = Array.isArray(res.data) ? res.data : res.data.results || [];
+        const list = Array.isArray(res.data.results) ? res.data.results : [];
         setEmployees(list);
+        setTotalPages(Math.ceil(res.data.count / 20));
       })
       .catch((err) => setError(err.response?.data?.detail || err.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
+
+  const handleSearchChange = (e) => {
+    setPendingSearch(e.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    setSearch(pendingSearch);
+    setCurrentPage(1);
+    fetchData(1, pendingSearch);
+  };
 
   const renderInitials = (first, last) => [first?.[0], last?.[0]].filter(Boolean).join("").toUpperCase();
 
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <Card className="mt-8">
-      <CardHeader
-        variant="gradient"
-        color="blue"
-        className="flex justify-between items-center p-6"
-      >
-        <Typography variant="h6" color="white">
-          Lista de Empleados
-        </Typography>
-        <Button
-          variant="gradient"
-          color="white"
-          className="flex items-center gap-2"
-          onClick={() => navigate("create")}
-        >
-          <PlusIcon className="h-5 w-5" />
-          Agregar Empleado
-        </Button>
+      <CardHeader variant="gradient" color="blue" className="flex flex-col md:flex-row justify-between gap-4 p-6">
+        <div className="flex-1">
+          <Typography variant="h6" color="white">
+            Lista de Empleados
+          </Typography>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            <Input
+              label="Buscar por nombre, correo o cédula"
+              value={pendingSearch}
+              onChange={handleSearchChange}
+              className="min-w-[250px]"
+            />
+            <Button onClick={handleSearchSubmit} size="sm" className="flex items-center gap-1">
+              <MagnifyingGlassIcon className="h-4 w-4" /> Buscar
+            </Button>
+          </div>
+          <Button
+            variant="gradient"
+            color="white"
+            className="flex items-center gap-2"
+            onClick={() => navigate("create")}
+          >
+            <PlusIcon className="h-5 w-5" /> Agregar Empleado
+          </Button>
+        </div>
       </CardHeader>
 
       <CardBody>
@@ -62,85 +112,95 @@ export default function EmployeeList() {
           <Typography color="red" className="p-4">
             Error: {error}
           </Typography>
+        ) : employees.length === 0 ? (
+          <Typography color="blue-gray" className="p-4">
+            No se encontraron empleados.
+          </Typography>
         ) : (
-          <table className="w-full table-auto text-left">
-            <thead>
-              <tr>
-                {["Empleado", "Documento", "Teléfono", "Docs", "Exámenes Médicos", "Acciones"].map(
-                  (hdr) => (
+          <>
+            <table className="w-full table-auto text-left">
+              <thead>
+                <tr>
+                  {["Empleado", "Documento", "Teléfono", "Docs", "Exámenes Médicos", "Acciones"].map((hdr) => (
                     <th key={hdr} className="border-b border-gray-200 py-2 px-4">
                       <Typography variant="small" className="text-xs font-bold uppercase text-gray-500">
                         {hdr}
                       </Typography>
                     </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((emp) => (
-                <tr key={emp.id} className="border-b border-gray-100">
-                  {/* Empleado: avatar + nombre y email debajo */}
-                  <td className="py-3 px-4 flex items-center gap-3">
-                    {emp.avatar ? (
-                      <Avatar size="sm" variant="circular" src={emp.avatar} />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-blue-gray-100 flex items-center justify-center">
-                        <Typography className="text-sm font-semibold text-blue-gray-600">
-                          {renderInitials(emp.first_name, emp.last_name)}
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map((emp) => (
+                  <tr key={emp.id} className="border-b border-gray-100">
+                    <td className="py-3 px-4 flex items-center gap-3">
+                      {emp.avatar ? (
+                        <Avatar size="sm" variant="circular" src={emp.avatar} />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-blue-gray-100 flex items-center justify-center">
+                          <Typography className="text-sm font-semibold text-blue-gray-600">
+                            {renderInitials(emp.first_name, emp.last_name)}
+                          </Typography>
+                        </div>
+                      )}
+                      <div>
+                        <Typography className="text-sm font-semibold text-gray-700">
+                          {emp.first_name} {emp.last_name}
+                        </Typography>
+                        <Typography className="text-xs text-gray-500">
+                          {emp.user_email}
                         </Typography>
                       </div>
-                    )}
-                    <div>
-                      <Typography className="text-sm font-semibold text-gray-700">
-                        {emp.first_name} {emp.last_name}
+                    </td>
+                    <td className="py-3 px-4">
+                      <Typography variant="small" className="text-gray-600">
+                        {emp.document}
                       </Typography>
-                      <Typography className="text-xs text-gray-500">
-                        {emp.user_email}
+                    </td>
+                    <td className="py-3 px-4">
+                      <Typography variant="small" className="text-gray-600">
+                        {emp.phone_contact || "—"}
                       </Typography>
-                    </div>
-                  </td>
-
-                  {/* Documento */}
-                  <td className="py-3 px-4">
-                    <Typography variant="small" className="text-gray-600">
-                      {emp.document}
-                    </Typography>
-                  </td>
-
-                  {/* Teléfono */}
-                  <td className="py-3 px-4">
-                    <Typography variant="small" className="text-gray-600">
-                      {emp.phone_contact || "—"}
-                    </Typography>
-                  </td>
-
-                  {/* Docs */}
-                  <td className="py-3 px-4">
-                    <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/documents`)}>
-                        <DocumentIcon className="h-4 w-4" />
-                        Ver Docs
+                    </td>
+                    <td className="py-3 px-4">
+                      <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/documents`)}>
+                        <DocumentIcon className="h-4 w-4" /> Ver Docs
                       </Button>
-                  </td>
-
-                  {/* Exámenes Médicos */}
-                  <td className="py-3 px-4">
-                    <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/medical-exams`)}>
-                        <ClipboardDocumentListIcon className="h-4 w-4" />
-                        Ver Exams
+                    </td>
+                    <td className="py-3 px-4">
+                      <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/medical-exams`)}>
+                        <ClipboardDocumentListIcon className="h-4 w-4" /> Ver Exams
                       </Button>
-                  </td>
-
-                  {/* Acciones */}
-                  <td className="py-3 px-4">
-                    <Button size="sm" variant="text" onClick={() => navigate(`${emp.id}/edit`)}>
-                      Editar
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Button size="sm" variant="text" onClick={() => navigate(`${emp.id}/edit`)}>
+                        Editar
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-between items-center mt-4">
+              <Typography variant="small" color="blue-gray">
+                Página {currentPage} de {totalPages}
+              </Typography>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => goToPage(1)} disabled={currentPage === 1}>
+                  <ChevronDoubleLeftIcon className="h-4 w-4" />
+                </Button>
+                <Button size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
+                  <ChevronLeftIcon className="h-4 w-4" />
+                </Button>
+                <Button size="sm" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                  <ChevronRightIcon className="h-4 w-4" />
+                </Button>
+                <Button size="sm" onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages}>
+                  <ChevronDoubleRightIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
         )}
       </CardBody>
     </Card>
