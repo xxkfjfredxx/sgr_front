@@ -37,7 +37,7 @@ export const routes = [
     layout: "dashboard",
     pages: [
       { icon: <HomeIcon {...icon} />, name: "Dashboard", path: "", element: <DashboardPage /> },
-      { icon: null, name: "Detalle actividad", path: "activities/:id", element: <ActivityDetail /> },
+      { path: "activities/:id", element: <ActivityDetail /> },
       { icon: <TableCellsIcon {...icon} />, name: "Indicadores SST", path: "indicators", element: <IndicatorDashboard /> },
       { icon: <UserCircleIcon {...icon} />, name: "Exámenes médicos", path: "my-medical-exams", element: <MedicalExamSelfPage /> },
 
@@ -46,7 +46,7 @@ export const routes = [
       { icon: <UserCircleIcon {...icon} />, name: "Lista Empleados", path: "employees", element: <EmployeeList /> },
       { path: "/employees/:id/documents", element: <EmployeeDocumentsPage /> },
       { path: "/employees/:id/medical-exams", element: <MedicalExamsPage /> },
-      { icon: <UserCircleIcon {...icon} />, name: "Editar Empleado", path: "employees/:id/edit", element: <EmployeeForm /> },
+      { path: "employees/:id/edit", element: <EmployeeForm /> },
 
       // Documentos y exámenes admin
       { icon: <UserCircleIcon {...icon} />, name: "Mis Documentos", path: "my-documents", element: <EmployeeDocumentsPage /> },

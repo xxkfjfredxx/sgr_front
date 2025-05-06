@@ -1,18 +1,16 @@
 import React from 'react';
 import { Spinner, Typography } from '@material-tailwind/react';
 import { useParams } from 'react-router-dom';
-import { useAuthUser } from '@/hooks/useAuthUser'; // 👈 tu custom hook
+import { useAuthUser } from '@/hooks/useAuthUser';
 
 import { useEmployeeDocumentList } from '@/hooks/useEmployeeDocumentList';
 import EmployeeDocumentForm from '@/components/EmployeeDocumentForm';
 import DocumentGallery from '@/components/DocumentGallery';
 
 const EmployeeDocumentsPage = () => {
-  const { id: paramId } = useParams(); // ID de la URL si existe
-  const { employeeId: authEmployeeId, isStaff, isSuperuser } = useAuthUser(); // del login
-  const isAdmin = isStaff || isSuperuser;
+  const { id: paramId } = useParams();
+  const { employeeId: authEmployeeId } = useAuthUser(); // ya no necesitas isAdmin aquí
 
-  // Elige el id según prioridad: URL primero, si no, el propio empleado logueado
   const employeeId = paramId ?? authEmployeeId;
 
   if (!employeeId) {
@@ -47,9 +45,15 @@ const EmployeeDocumentsPage = () => {
         </div>
       )}
 
-      {/* Galería */}
+      {/* Galería con opción de eliminar */}
       {!loading && !error && (
-        <DocumentGallery documents={documents} />
+        <DocumentGallery
+          documents={documents}
+          onDelete={() => {
+            console.log("🧨 refetch() desde EmployeeDocumentsPage");
+            refetch();
+          }}
+        />
       )}
     </div>
   );

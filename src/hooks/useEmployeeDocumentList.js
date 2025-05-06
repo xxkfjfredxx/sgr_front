@@ -1,3 +1,4 @@
+// src/hooks/useEmployeeDocumentList.js
 import { useEffect, useState } from 'react';
 import api from '@/services/api';
 
@@ -5,18 +6,20 @@ export function useEmployeeDocumentList(employeeId) {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reload, setReload] = useState(0); // fuerza recarga manual
 
   const fetchDocuments = async () => {
-    setLoading(true);
-    setError(null);
-    setDocuments([]);
     if (!employeeId) {
+      setDocuments([]);
       setLoading(false);
       return;
     }
+
+    setLoading(true);
+    setError(null);
+
     try {
-      const res = await api.get(`/documents/`, { params: { employee: employeeId } });
-      // DRF devuelve paginación: results
+      const res = await api.get('/documents/', { params: { employee: employeeId } });
       const list = Array.isArray(res.data.results) ? res.data.results : [];
       setDocuments(list);
     } catch (err) {
@@ -27,9 +30,18 @@ export function useEmployeeDocumentList(employeeId) {
     }
   };
 
+  // Se ejecuta al cambiar el empleado o cuando se pide refetch
   useEffect(() => {
+    console.log("📥 useEffect ejecutado con employeeId:", employeeId, "reload:", reload);
     fetchDocuments();
-  }, [employeeId]);
+  }, [employeeId, reload]);
 
-  return { documents, loading, error, refetch: fetchDocuments };
+  const refetch = () => setReload((prev) => prev + 1);
+
+  return {
+    documents,
+    loading,
+    error,
+    refetch,
+  };
 }

@@ -4,7 +4,8 @@ import { Typography, Select, Option, Spinner } from "@material-tailwind/react";
 import api from "@/services/api";
 import { useEmployeeDocumentList } from "@/hooks/useEmployeeDocumentList";
 import EmployeeDocumentForm from "@/components/EmployeeDocumentForm";
-import DocumentGallery from "@/components/DocumentGallery";
+import DocumentGallery from '@/components/DocumentGallery';
+console.log("✅ DocumentGallery importado correctamente");
 
 export default function EmployeeDocumentsAdminPage() {
   const [employees, setEmployees] = useState([]);
@@ -120,7 +121,13 @@ export default function EmployeeDocumentsAdminPage() {
               ⚠️ Error al cargar documentos: {errorDocs}
             </div>
           ) : (
-            <DocumentGallery documents={documents} onDelete={refetch} />
+            <DocumentGallery
+              documents={documents}
+              onDelete={() => {
+                console.log("📡 refetch() desde AdminPage ejecutado");
+                refetch();
+              }}
+            />
           )}
         </>
       )}

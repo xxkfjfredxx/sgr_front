@@ -62,35 +62,37 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }, pageIndex) => {
-              const to = path ? `/${layout}/${path}` : `/${layout}`;
-              const isActive = location.pathname === to;
-              return (
-                <li key={`item-${sectionIndex}-${pageIndex}-${name}`} className="mb-1">
-                  <Button
-                    onClick={() =>
-                      startTransition(() => {
-                        navigate(to);
-                        setOpenSidenav(dispatch, false);
-                      })
-                    }
-                    variant={isActive ? "gradient" : "text"}
-                    color={isActive ? sidenavColor : "blue-gray"}
-                    className="flex items-center gap-4 px-4 normal-case w-full"
-                    fullWidth
-                    disabled={isPending}
-                  >
-                    {icon}
-                    <Typography color="inherit" className="font-medium">
-                      {name || ""}
-                    </Typography>
-                    {isPending && isActive && (
-                      <span className="text-xs text-white ml-auto">…</span>
-                    )}
-                  </Button>
-                </li>
-              );
-            })}
+            {pages
+              .filter((page) => page.name) // 👈 Esta es la línea clave
+              .map(({ icon, name, path }, pageIndex) => {
+                const to = path ? `/${layout}/${path}` : `/${layout}`;
+                const isActive = location.pathname === to;
+                return (
+                  <li key={`item-${sectionIndex}-${pageIndex}-${name}`} className="mb-1">
+                    <Button
+                      onClick={() =>
+                        startTransition(() => {
+                          navigate(to);
+                          setOpenSidenav(dispatch, false);
+                        })
+                      }
+                      variant={isActive ? "gradient" : "text"}
+                      color={isActive ? sidenavColor : "blue-gray"}
+                      className="flex items-center gap-4 px-4 normal-case w-full"
+                      fullWidth
+                      disabled={isPending}
+                    >
+                      {icon}
+                      <Typography color="inherit" className="font-medium">
+                        {name || ""}
+                      </Typography>
+                      {isPending && isActive && (
+                        <span className="text-xs text-white ml-auto">…</span>
+                      )}
+                    </Button>
+                  </li>
+                );
+              })}
           </ul>
         ))}
       </div>
