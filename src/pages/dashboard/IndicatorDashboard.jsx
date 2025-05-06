@@ -1,9 +1,32 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Card, Typography, Spinner } from '@material-tailwind/react';
-import { useIndicatorSummary } from '@/hooks/useIndicatorSummary';
+import { EmpresaContext } from '@/context/EmpresaContext';
+import api from '@/services/api';
+import dayjs from 'dayjs';
 
 const IndicatorDashboard = () => {
-  const { data, loading, error } = useIndicatorSummary();
+  const { empresaId } = useContext(EmpresaContext);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const currentYear = dayjs().year();
+  const from = `${currentYear}-01`;
+  const to = `${currentYear}-12`;
+
+  useEffect(() => {
+    if (!empresaId) return;
+
+    setLoading(true);
+    setError(null);
+
+    api.get('/indicators/summary/', {
+      params: { company: empresaId, from, to }
+    })
+      .then(res => setData(res.data))
+      .catch(err => setError("Error al cargar los indicadores."))
+      .finally(() => setLoading(false));
+  }, [empresaId]);
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">

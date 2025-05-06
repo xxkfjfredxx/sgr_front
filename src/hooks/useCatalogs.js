@@ -18,7 +18,9 @@ export function useCatalogs() {
         ]);
         setPositions(posRes.data);
         setWorkAreas(areaRes.data);
-        setCompanies(compRes.data);
+        const raw = compRes.data;
+        const parsed = Array.isArray(raw.results) ? raw.results : raw;
+        setCompanies(parsed);
       } catch (err) {
         const msg = err.response?.data?.detail || err.response?.data?.message || err.message;
         setError(msg);
@@ -33,4 +35,3 @@ export function useCatalogs() {
 
   return { positions, workAreas, companies, loading, error };
 }
-

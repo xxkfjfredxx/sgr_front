@@ -1,4 +1,3 @@
-// src/pages/employees/EmployeeList.jsx
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   Avatar,
   Button,
   Input,
+  Checkbox,
 } from "@material-tailwind/react";
 import {
   PlusIcon,
@@ -20,6 +20,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { useEmpresaActiva } from "@/hooks/useEmpresaActiva";
 import api from "@/services/api";
 
 export default function EmployeeList() {
@@ -30,17 +31,22 @@ export default function EmployeeList() {
   const [pendingSearch, setPendingSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filterActive, setFilterActive] = useState(true);
   const navigate = useNavigate();
+  const { empresaActivaId } = useEmpresaActiva();
 
-  const fetchData = (page = currentPage, query = search) => {
+  const fetchData = (page = currentPage, query = search, isActive = filterActive) => {
+    if (!empresaActivaId) return;
     setLoading(true);
+    const params = {
+      page,
+      search: query,
+      company: empresaActivaId,
+      is_active: isActive,
+    };
+
     api
-      .get("/employees/", {
-        params: {
-          page,
-          search: query,
-        },
-      })
+      .get("/employees/", { params })
       .then((res) => {
         const list = Array.isArray(res.data.results) ? res.data.results : [];
         setEmployees(list);
@@ -51,25 +57,25 @@ export default function EmployeeList() {
   };
 
   useEffect(() => {
+    fetchData(1, search, filterActive);
+  }, [empresaActivaId, filterActive]);
+
+  useEffect(() => {
     fetchData();
   }, [currentPage]);
 
-  const handleSearchChange = (e) => {
-    setPendingSearch(e.target.value);
-  };
+  const handleSearchChange = (e) => setPendingSearch(e.target.value);
 
   const handleSearchSubmit = () => {
     setSearch(pendingSearch);
     setCurrentPage(1);
-    fetchData(1, pendingSearch);
+    fetchData(1, pendingSearch, filterActive);
   };
 
   const renderInitials = (first, last) => [first?.[0], last?.[0]].filter(Boolean).join("").toUpperCase();
 
   const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   return (
@@ -92,6 +98,13 @@ export default function EmployeeList() {
               <MagnifyingGlassIcon className="h-4 w-4" /> Buscar
             </Button>
           </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={filterActive}
+              onChange={(e) => setFilterActive(e.target.checked)}
+              label="Solo activos"
+            />
+          </div>
           <Button
             variant="gradient"
             color="white"
@@ -104,24 +117,20 @@ export default function EmployeeList() {
       </CardHeader>
 
       <CardBody>
-        {loading ? (
-          <Typography color="blue-gray" className="p-4">
-            Cargando empleados...
-          </Typography>
+        {!empresaActivaId ? (
+          <Typography color="red" className="p-4">Seleccione una empresa para listar empleados.</Typography>
+        ) : loading ? (
+          <Typography color="blue-gray" className="p-4">Cargando empleados...</Typography>
         ) : error ? (
-          <Typography color="red" className="p-4">
-            Error: {error}
-          </Typography>
+          <Typography color="red" className="p-4">Error: {error}</Typography>
         ) : employees.length === 0 ? (
-          <Typography color="blue-gray" className="p-4">
-            No se encontraron empleados.
-          </Typography>
+          <Typography color="blue-gray" className="p-4">No se encontraron empleados.</Typography>
         ) : (
           <>
             <table className="w-full table-auto text-left">
               <thead>
                 <tr>
-                  {["Empleado", "Documento", "Teléfono", "Docs", "Exámenes Médicos", "Acciones"].map((hdr) => (
+                  {["Empleado", "Documento", "Teléfono", "Activo", "Docs", "Exámenes Médicos", "Acciones"].map((hdr) => (
                     <th key={hdr} className="border-b border-gray-200 py-2 px-4">
                       <Typography variant="small" className="text-xs font-bold uppercase text-gray-500">
                         {hdr}
@@ -147,19 +156,18 @@ export default function EmployeeList() {
                         <Typography className="text-sm font-semibold text-gray-700">
                           {emp.first_name} {emp.last_name}
                         </Typography>
-                        <Typography className="text-xs text-gray-500">
-                          {emp.user_email}
-                        </Typography>
+                        <Typography className="text-xs text-gray-500">{emp.user_email}</Typography>
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <Typography variant="small" className="text-gray-600">
-                        {emp.document}
-                      </Typography>
+                      <Typography variant="small" className="text-gray-600">{emp.document}</Typography>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Typography variant="small" className="text-gray-600">{emp.phone_contact || "—"}</Typography>
                     </td>
                     <td className="py-3 px-4">
                       <Typography variant="small" className="text-gray-600">
-                        {emp.phone_contact || "—"}
+                        {emp.employment_links?.some((link) => link.status === "ACTIVE") ? "Sí" : "No"}
                       </Typography>
                     </td>
                     <td className="py-3 px-4">
@@ -181,6 +189,7 @@ export default function EmployeeList() {
                 ))}
               </tbody>
             </table>
+
             <div className="flex justify-between items-center mt-4">
               <Typography variant="small" color="blue-gray">
                 Página {currentPage} de {totalPages}

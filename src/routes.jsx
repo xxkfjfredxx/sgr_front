@@ -18,6 +18,7 @@ const IndicatorDashboard = lazy(() => import("@/pages/dashboard/IndicatorDashboa
 
 const EmployeeList = lazy(() => import("@/pages/employees/EmployeeList.jsx"));
 const EmployeeForm = lazy(() => import("@/pages/employees/EmployeeForm.jsx"));
+const EmployeeWizardForm = lazy(() => import("@/pages/employees/EmployeeWizardForm.jsx"));
 const EmploymentLinkForm = lazy(() => import("@/pages/employment-links/EmploymentLinkForm.jsx"));
 const EmploymentLinkList = lazy(() => import("@/pages/employment-links/EmploymentLinkList.jsx"));
 const EmployeeDocumentsPage = lazy(() => import("@/pages/employees/EmployeeDocumentsPage.jsx"));
@@ -39,23 +40,21 @@ export const routes = [
       { icon: <HomeIcon {...icon} />, name: "Dashboard", path: "", element: <DashboardPage /> },
       { path: "activities/:id", element: <ActivityDetail /> },
       { icon: <TableCellsIcon {...icon} />, name: "Indicadores SST", path: "indicators", element: <IndicatorDashboard /> },
-      { icon: <UserCircleIcon {...icon} />, name: "Exámenes médicos", path: "my-medical-exams", element: <MedicalExamSelfPage /> },
+      
 
       // Empleados
-      { icon: <PlusIcon {...icon} />, name: "Crear Empleado", path: "employees/create", element: <EmployeeForm /> },
+      
+      { icon: <PlusIcon {...icon} />, name: "Crear Empleado", path: "employees/create-wizard", element: <EmployeeWizardForm /> },
       { icon: <UserCircleIcon {...icon} />, name: "Lista Empleados", path: "employees", element: <EmployeeList /> },
       { path: "/employees/:id/documents", element: <EmployeeDocumentsPage /> },
       { path: "/employees/:id/medical-exams", element: <MedicalExamsPage /> },
       { path: "employees/:id/edit", element: <EmployeeForm /> },
 
       // Documentos y exámenes admin
-      { icon: <UserCircleIcon {...icon} />, name: "Mis Documentos", path: "my-documents", element: <EmployeeDocumentsPage /> },
+      
       { icon: <UserCircleIcon {...icon} />, name: "Subir Docs (Admin)", path: "documents-upload", element: <EmployeeDocumentsAdmin /> },
       { icon: <UserCircleIcon {...icon} />, name: "Exámenes Médicos (Admin)", path: "medical-exams-admin", element: <EmployeeMedicalExamsAdminPage /> },
 
-      // Vínculos laborales
-      { icon: <PlusIcon {...icon} />, name: "Crear Vínculo", path: "employment-links/create", element: <EmploymentLinkForm /> },
-      { icon: <TableCellsIcon {...icon} />, name: "Vínculos", path: "employment-links", element: <EmploymentLinkList /> },
 
       // Otras
       { icon: <UserCircleIcon {...icon} />, name: "Perfil", path: "profile", element: <Profile /> },
@@ -69,6 +68,13 @@ export const routes = [
     pages: [
       { icon: <ServerStackIcon {...icon} />, name: "Sign In", path: "/sign-in", element: <SignIn /> },
       { icon: <RectangleStackIcon {...icon} />, name: "Sign Up", path: "/sign-up", element: <SignUp /> },
+      { icon: <UserCircleIcon {...icon} />, name: "Exámenes médicos", path: "my-medical-exams", element: <MedicalExamSelfPage /> },
+      { icon: <PlusIcon {...icon} />, name: "Crear Empleado", path: "employees/create", element: <EmployeeForm /> },
+      { icon: <UserCircleIcon {...icon} />, name: "Mis Documentos", path: "my-documents", element: <EmployeeDocumentsPage /> },
+      // Vínculos laborales
+      { icon: <PlusIcon {...icon} />, name: "Crear Vínculo", path: "employment-links/create", element: <EmploymentLinkForm /> },
+      { icon: <TableCellsIcon {...icon} />, name: "Vínculos", path: "employment-links", element: <EmploymentLinkList /> },
+
     ],
   },
 ];
