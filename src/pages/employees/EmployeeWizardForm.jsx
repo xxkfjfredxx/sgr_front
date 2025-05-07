@@ -8,18 +8,32 @@ import {
   CardBody,
   Checkbox,
   Switch,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useCatalogs } from "@/hooks/useCatalogs";
 import AutocompleteCargo from "@/components/AutocompleteCargo";
 import api from "@/services/api";
 import { EmpresaContext } from "@/context/EmpresaContext";
+import { useEpsList } from "@/hooks/useEpsList";
+
+const afpList = ["Colfondos", "Porvenir", "Protección", "Skandia"];
+const educationLevels = [
+  "Básica",
+  "Media",
+  "Técnico",
+  "Tecnólogo",
+  "Pregrado",
+  "Posgrado",
+];
 
 export default function EmployeeWizardForm() {
   const navigate = useNavigate();
   const { companies = [] } = useCatalogs();
   const companyList = Array.isArray(companies) ? companies : [];
   const { empresaId } = useContext(EmpresaContext);
+  const epsNames = useEpsList();
 
   const [step, setStep] = useState(1);
   const [employee, setEmployee] = useState({
@@ -27,6 +41,12 @@ export default function EmployeeWizardForm() {
     last_name: "",
     document: "",
     phone_contact: "",
+    emergency_contact: "",
+    emergency_name: "",
+    address: "",
+    afp: "",
+    eps: "",
+    education: "",
     is_active: true,
   });
   const [selectedCompanies, setSelectedCompanies] = useState([]);
@@ -40,6 +60,12 @@ export default function EmployeeWizardForm() {
       last_name: "",
       document: "",
       phone_contact: "",
+      emergency_contact: "",
+      emergency_name: "",
+      address: "",
+      afp: "",
+      eps: "",
+      education: "",
       is_active: true,
     });
     setSelectedCompanies([]);
@@ -131,40 +157,36 @@ export default function EmployeeWizardForm() {
 
       {step === 1 && (
         <form className="space-y-4">
-          <Input
-            label="Nombres"
-            name="first_name"
-            value={employee.first_name}
-            onChange={handleEmployeeChange}
-          />
-          <Input
-            label="Apellidos"
-            name="last_name"
-            value={employee.last_name}
-            onChange={handleEmployeeChange}
-          />
-          <Input
-            label="Documento"
-            name="document"
-            value={employee.document}
-            onChange={handleEmployeeChange}
-          />
-          <Input
-            label="Teléfono"
-            name="phone_contact"
-            value={employee.phone_contact}
-            onChange={handleEmployeeChange}
-          />
+          <Input label="Nombres" name="first_name" value={employee.first_name} onChange={handleEmployeeChange} />
+          <Input label="Apellidos" name="last_name" value={employee.last_name} onChange={handleEmployeeChange} />
+          <Input label="Documento" name="document" value={employee.document} onChange={handleEmployeeChange} />
+          <Input label="Teléfono" name="phone_contact" value={employee.phone_contact} onChange={handleEmployeeChange} />
+          <Input label="Contacto de emergencia" name="emergency_contact" value={employee.emergency_contact} onChange={handleEmployeeChange} />
+          <Input label="Nombre contacto de emergencia" name="emergency_name" value={employee.emergency_name} onChange={handleEmployeeChange} />
+          <Input label="Dirección" name="address" value={employee.address} onChange={handleEmployeeChange} />
+
+          <Select label="AFP" value={employee.afp} onChange={(val) => setEmployee({ ...employee, afp: val })}>
+            {afpList.map((afp) => (
+              <Option key={afp} value={afp}>{afp}</Option>
+            ))}
+          </Select>
+
+          <Select label="EPS" value={employee.eps} onChange={(val) => setEmployee({ ...employee, eps: val })}>
+            {epsNames?.map((name) => (
+              <Option key={name} value={name}>{name}</Option>
+            ))}
+          </Select>
+
+          <Select label="Nivel educativo" value={employee.education} onChange={(val) => setEmployee({ ...employee, education: val })}>
+            {educationLevels.map((level) => (
+              <Option key={level} value={level}>{level}</Option>
+            ))}
+          </Select>
+
           <div className="flex items-center gap-3">
-            <Switch
-              label="Empleado Activo"
-              checked={employee.is_active}
-              onChange={(e) => setEmployee({ ...employee, is_active: e.target.checked })}
-            />
+            <Switch label="Empleado Activo" checked={employee.is_active} onChange={(e) => setEmployee({ ...employee, is_active: e.target.checked })} />
           </div>
-          <Button onClick={() => setStep(2)} color="blue">
-            Siguiente
-          </Button>
+          <Button onClick={() => setStep(2)} color="blue">Siguiente</Button>
         </form>
       )}
 
@@ -173,12 +195,7 @@ export default function EmployeeWizardForm() {
           <Typography variant="h6">Selecciona las empresas</Typography>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-2">
             {companyList.map((c) => (
-              <Checkbox
-                key={c.id}
-                label={c.name}
-                checked={selectedCompanies.includes(c.id)}
-                onChange={() => toggleCompany(c.id)}
-              />
+              <Checkbox key={c.id} label={c.name} checked={selectedCompanies.includes(c.id)} onChange={() => toggleCompany(c.id)} />
             ))}
           </div>
 
@@ -186,37 +203,23 @@ export default function EmployeeWizardForm() {
             <Card key={cid} className="my-4">
               <CardBody className="space-y-2">
                 <Typography variant="h6">
-                  Vínculo para {companyList.find((c) => c.id === cid)?.name || 'Empresa'}
+                  Vínculo para {companyList.find((c) => c.id === cid)?.name || "Empresa"}
                 </Typography>
 
-                <AutocompleteCargo
-                  value={links[cid]?.position || ""}
-                  onChange={(val) => handleLinkChange(cid, "position", val)}
-                />
+                <AutocompleteCargo value={links[cid]?.position || ""} onChange={(val) => handleLinkChange(cid, "position", val)} />
 
-                <Input
-                  label="Salario"
-                  value={links[cid]?.salary || ""}
-                  onChange={(e) => {
-                    const formatted = formatSalary(e.target.value);
-                    handleLinkChange(cid, "salary", formatted);
-                  }}
-                />
+                <Input label="Salario" value={links[cid]?.salary || ""} onChange={(e) => {
+                  const formatted = formatSalary(e.target.value);
+                  handleLinkChange(cid, "salary", formatted);
+                }} />
 
-                <Input
-                  label="Fecha inicio"
-                  type="date"
-                  value={links[cid]?.start_date || ""}
-                  onChange={(e) => handleLinkChange(cid, "start_date", e.target.value)}
-                />
+                <Input label="Fecha inicio" type="date" value={links[cid]?.start_date || ""} onChange={(e) => handleLinkChange(cid, "start_date", e.target.value)} />
               </CardBody>
             </Card>
           ))}
 
           <div className="flex justify-between">
-            <Button onClick={() => setStep(1)} variant="outlined">
-              Atrás
-            </Button>
+            <Button onClick={() => setStep(1)} variant="outlined">Atrás</Button>
             <Button onClick={handleSubmit} disabled={submitting} color="green">
               {submitting ? <Spinner className="h-4 w-4" /> : "Crear Empleado y Vínculos"}
             </Button>

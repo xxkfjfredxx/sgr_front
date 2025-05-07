@@ -42,8 +42,8 @@ export default function EmployeeList() {
       page,
       search: query,
       company: empresaActivaId,
-      is_active: isActive,
     };
+    if (isActive !== null) params.is_active = isActive;
 
     api
       .get("/employees/", { params })
@@ -102,14 +102,14 @@ export default function EmployeeList() {
             <Checkbox
               checked={filterActive}
               onChange={(e) => setFilterActive(e.target.checked)}
-              label="Solo activos"
+              label={<span className="text-sm">Solo activos</span>}
             />
           </div>
           <Button
             variant="gradient"
             color="white"
             className="flex items-center gap-2"
-            onClick={() => navigate("create")}
+            onClick={() => navigate("create-wizard")}
           >
             <PlusIcon className="h-5 w-5" /> Agregar Empleado
           </Button>
