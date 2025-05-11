@@ -42,8 +42,8 @@ export default function EmployeeList() {
       page,
       search: query,
       company: empresaActivaId,
+      is_active: isActive,
     };
-    if (isActive !== null) params.is_active = isActive;
 
     api
       .get("/employees/", { params })
@@ -102,7 +102,7 @@ export default function EmployeeList() {
             <Checkbox
               checked={filterActive}
               onChange={(e) => setFilterActive(e.target.checked)}
-              label={<span className="text-sm">Solo activos</span>}
+              label={<Typography variant="small">Solo activos</Typography>}
             />
           </div>
           <Button
