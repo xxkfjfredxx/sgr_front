@@ -52,6 +52,12 @@ const MedicalExamForm                = lazy(() => import('@/pages/sst/MedicalExa
 const SignIn                         = lazy(() => import('@/pages/auth/sign-in'));
 const SignUp                         = lazy(() => import('@/pages/auth/sign-up'));
 
+const EquipmentInventoryList = lazy(() => import('@/pages/sst/EquipmentInventoryList.jsx'));
+const EquipmentInventoryForm = lazy(() => import('@/pages/sst/EquipmentInventoryForm.jsx'));
+const EquipmentInspectionList = lazy(() => import('@/pages/sst/EquipmentInspectionList.jsx'));
+const EquipmentInspectionForm = lazy(() => import('@/pages/sst/EquipmentInspectionForm.jsx'));
+
+
 const icon = { className: 'w-5 h-5 text-inherit' };
 
 export const routes = [
@@ -79,6 +85,22 @@ export const routes = [
       { path: 'sst/capacitaciones', element: <TrainingPage /> },
       { path: 'sst/capacitaciones/:id', element: <TrainingSessionDetail /> },
 
+      {
+        path: 'sst/equipment',
+        icon: <TableCellsIcon {...icon} />,
+        name: 'Inventario Equipos',
+        element: <EquipmentInventoryList />
+      },
+      { path: 'sst/equipment/new', element: <EquipmentInventoryForm /> },
+      // <-- esta es la ruta de edición:
+      { path: 'sst/equipment/:id', element: <EquipmentInventoryForm /> },
+      
+      // inspecciones (si quieres edición de inspecciones):
+      { path: 'sst/equipment/:id/inspections', element: <EquipmentInspectionList /> },
+      { path: 'sst/equipment/:id/inspections/new', element: <EquipmentInspectionForm /> },
+      // para editar inspección:
+      { path: 'sst/equipment/:id/inspections/:inspectionId', element: <EquipmentInspectionForm /> },
+      
       // Aptitud Médica
       { path: 'sst/aptitud-medica', element: <MedicalExamList /> },
       { path: 'sst/aptitud-medica/new', element: <MedicalExamForm /> },
