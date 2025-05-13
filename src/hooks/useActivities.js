@@ -1,41 +1,45 @@
+// src/hooks/useActivities.js
 import { useState, useEffect, useContext } from "react";
 import api from "@/services/api";
-import { EmpresaContext } from "../context/EmpresaContext";
+import { EmpresaContext } from "@/context/EmpresaContext";
 
-export function useActivities(month) {
+export function useActivities({ month, year }) {
   const { empresaId } = useContext(EmpresaContext);
   const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState(null);
 
   useEffect(() => {
-    if (!month || !empresaId) {
-      setLoading(false);
+    if (!empresaId || !month || !year) {
       setActivities([]);
       return;
     }
-    const fetchActivities = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get("/activities/", {
-          params: { month, company: empresaId },
-        });
-        if (Array.isArray(res.data.results)) {
-          setActivities(res.data.results);
-        } else {
-          setActivities([]);
-          setError("La respuesta no contiene actividades");
-        }
-      } catch (err) {
-        setError(err.message);
-        setActivities([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchActivities();
-  }, [month, empresaId]);
+    setLoading(true);
+    setError(null);
+    api
+      .get("/activities/", {
+        params: { company: empresaId, month, year },
+      })
+      .then((res) => {
+        const data = Array.isArray(res.data.results) ? res.data.results : res.data;
+        setActivities(data);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [empresaId, month, year]);
 
-  return { activities, loading, error };
+  const create = async ({ title, description = "", start_date, end_date, status = "pending" }) => {
+    const payload = { company: empresaId, title, description, start_date, end_date, status };
+    const res = await api.post("/activities/", payload);
+    setActivities((prev) => [...prev, res.data]);
+    return res;
+  };
+
+  const update = async (id, data) => {
+    const res = await api.put(`/activities/${id}/`, { ...data, company: empresaId });
+    setActivities((prev) => prev.map((act) => (act.id === id ? res.data : act)));
+    return res;
+  };
+
+  return { activities, loading, error, create, update };
 }

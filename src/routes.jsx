@@ -27,6 +27,10 @@ const AccidentPage = lazy(() => import('@/pages/sst/AccidentPage.jsx'));
 const MedicalAptitudePage = lazy(() => import('@/pages/sst/MedicalAptitudePage.jsx'));
 const TrainingSessionDetail = lazy(() => import('@/pages/sst/TrainingSessionDetail.jsx'));
 
+const VaccinationList = lazy(() => import('@/pages/sst/VaccinationList.jsx'));
+const VaccinationForm = lazy(() => import('@/pages/sst/VaccinationForm.jsx'));
+import { BeakerIcon } from '@heroicons/react/24/solid';
+
 const SignIn = lazy(() => import('@/pages/auth/sign-in'));
 const SignUp = lazy(() => import('@/pages/auth/sign-up'));
 
@@ -38,6 +42,7 @@ export const routes = [
     pages: [
       { icon: <HomeIcon {...icon} />, name: 'Dashboard', path: '', element: <DashboardPage /> },
       { path: 'activities/:id', element: <ActivityDetail /> },
+      { path: 'activities', element: <ActivityDetail /> },
       { icon: <TableCellsIcon {...icon} />, name: 'Indicadores SST', path: 'indicators', element: <IndicatorDashboard /> },
 
       // Empleados
@@ -60,6 +65,18 @@ export const routes = [
       { path: 'sst/capacitaciones', element: <TrainingPage /> },
       { path: 'sst/accidentes', element: <AccidentPage /> },
       { path: 'sst/aptitud-medica', element: <MedicalAptitudePage /> },
+
+      {
+        icon: <BeakerIcon  {...icon} />,
+        name: 'Vacunaciones',
+        path: 'sst/vaccinations',
+        element: <VaccinationList />
+      },
+      {
+        path: 'sst/vaccinations/new',
+        element: <VaccinationForm />
+      },
+
       // Otras
       { icon: <UserCircleIcon {...icon} />, name: 'Perfil', path: 'profile', element: <Profile /> },
       { icon: <TableCellsIcon {...icon} />, name: 'Tablas', path: 'tables', element: <Tables /> },

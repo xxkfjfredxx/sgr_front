@@ -1,163 +1,153 @@
 // src/pages/activities/ActivityDetail.jsx
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useActivity } from "@/hooks/useActivity";
-import api from "@/services/api";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
-  Spinner,
-  Typography,
-  Button,
-  Input,
-  Textarea,
-  Select,
-  Option,
+  Card, CardHeader, CardBody, Input, Button, Typography
 } from "@material-tailwind/react";
-import { ROUTES } from "@/configs/routes";
-import { EmpresaContext } from "@/context/EmpresaContext.jsx";
+import api from "@/services/api";
+import { EmpresaContext } from "@/context/EmpresaContext";
 
 export default function ActivityDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
   const { empresaId } = useContext(EmpresaContext);
+  const { id } = useParams();              // ← aquí
+  const activityId = id;                    // renombramos para claridad
+  const { search } = useLocation();
+  const dateParam = new URLSearchParams(search).get("date");
 
-  // Si no hay ID, mostramos mensaje sin intentar petición
-  if (!id) {
-    return (
-      <div className="p-6 text-gray-600">
-        <Typography variant="h6">ID de actividad no proporcionado.</Typography>
-        <Button color="gray" onClick={() => navigate(ROUTES.DASHBOARD)} className="mt-4">
-          ← Volver
-        </Button>
-      </div>
-    );
-  }
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    title:       "",
+    description: "",
+    start_date:  dateParam || "",
+    end_date:    dateParam || "",
+    status:      "pending",
+  });
+  const [loading, setLoading]     = useState(!!activityId);
+  const [error, setError]         = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const { activity, loading, error, updateActivityStatus, refetch } =
-    useActivity(id);
-
-  // Si cambia la empresa y no pertenece a esta actividad, redirigir
   useEffect(() => {
-    if (activity && empresaId && activity.company !== empresaId) {
-      navigate(ROUTES.DASHBOARD, { replace: true });
-    }
-  }, [activity, empresaId, navigate]);
+    if (!activityId) return;
+    setLoading(true);
+    api.get(`/activities/${activityId}/`)
+      .then((res) => {
+        setForm({
+          title:       res.data.title,
+          description: res.data.description || "",
+          start_date:  res.data.start_date,
+          end_date:    res.data.end_date,
+          status:      res.data.status,
+        });
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [activityId]);
 
-  // Estado local para el formulario
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
-  // Rellenar el formulario cuando llegue la actividad
-  useEffect(() => {
-    if (activity) {
-      setTitle(activity.title || "");
-      setDescription(activity.description || "");
-      setStatus(activity.status || "");
-    }
-  }, [activity]);
-
-  if (loading) {
-    return (
-      <div className="p-6 text-blue-600 flex items-center gap-2">
-        <Spinner className="h-5 w-5" />
-        <Typography>Cargando actividad…</Typography>
-      </div>
-    );
-  }
-
-  if (error) {
-    // Asegurarnos de mostrar un string
-    const message = typeof error === 'string' ? error : error.message || 'Error desconocido';
-    return (
-      <div className="p-6 text-red-600 bg-red-50 border border-red-200 rounded-md">
-        <Typography variant="h6">⚠️ {message}</Typography>
-        <Button color="gray" onClick={() => navigate(ROUTES.DASHBOARD)} className="mt-4">
-          ← Volver
-        </Button>
-      </div>
-    );
-  }
-
-  if (!activity) {
-    return (
-      <div className="p-6 text-gray-600">
-        <Typography>Actividad no encontrada o no accesible.</Typography>
-        <Button color="gray" onClick={() => navigate(ROUTES.DASHBOARD)} className="mt-4">
-          ← Volver
-        </Button>
-      </div>
-    );
-  }
-
-  const handleSave = async () => {
-    setSaving(true);
-    setSaveMessage("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
     try {
-      await api.patch(`/activities/${id}/`, { title, description, status });
-      setSaveMessage("✅ Cambios guardados exitosamente.");
-      refetch();
-    } catch (err) {
-      const msg = err.response?.data?.detail || err.message || 'Error al guardar';
-      setSaveMessage(`❌ ${msg}`);
+      const payload = { ...form, company: empresaId };
+      if (activityId) {
+        await api.put(`/activities/${activityId}/`, payload);
+      } else {
+        await api.post("/activities/", payload);
+      }
+      navigate("/dashboard");
+    } catch (e) {
+      setError(e.response?.data.detail || e.message);
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
-  const handleBack = () => {
-    navigate(ROUTES.DASHBOARD);
-  };
+  if (loading) return <Typography className="p-4">Cargando…</Typography>;
+  if (error)   return <Typography color="red" className="p-4">{error}</Typography>;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-md space-y-6">
-      <div className="flex justify-between items-center">
-        <Typography variant="h4" color="blue-gray">
-          Editar Actividad
-        </Typography>
-        <Button size="sm" color="gray" onClick={handleBack}>
-          ← Volver
-        </Button>
-      </div>
-
-      <div className="space-y-4">
-        <Input
-          label="Título"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <Textarea
-          label="Descripción"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <Select
-          label="Estado"
-          value={status}
-          onChange={(val) => setStatus(val)}
-        >
-          <Option value="pending">⏳ Pendiente</Option>
-          <Option value="in_progress">🔄 En progreso</Option>
-          <Option value="completed">✅ Finalizada</Option>
-          <Option value="cancelled">❌ Cancelada</Option>
-        </Select>
-
-        <Button
-          color="blue"
-          onClick={handleSave}
-          disabled={saving}
-          className="mt-4"
-        >
-          {saving ? "Guardando..." : "Guardar cambios"}
-        </Button>
-
-        {saveMessage && (
-          <div className="mt-2 text-sm text-green-600">{saveMessage}</div>
-        )}
-      </div>
-    </div>
+    <section className="p-6 max-w-md mx-auto">
+      <Card>
+        <CardHeader>
+          <Typography variant="h6">
+            {activityId ? "Editar actividad" : "Nueva actividad"}
+          </Typography>
+        </CardHeader>
+        <CardBody>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-700">Título</label>
+              <Input
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Descripción</label>
+              <Input
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700">Inicio</label>
+                <Input
+                  type="date"
+                  name="start_date"
+                  value={form.start_date}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">Fin</label>
+                <Input
+                  type="date"
+                  name="end_date"
+                  value={form.end_date}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-700">Estado</label>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              >
+                <option value="pending">pending</option>
+                <option value="in_progress">in_progress</option>
+                <option value="completed">completed</option>
+                <option value="cancelled">cancelled</option>
+              </select>
+            </div>
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full"
+            >
+              {submitting
+                ? "Guardando…"
+                : activityId
+                  ? "Actualizar"
+                  : "Crear"
+              }
+            </Button>
+          </form>
+        </CardBody>
+      </Card>
+    </section>
   );
 }
