@@ -135,10 +135,10 @@ export const routes = [
     pages: [
       { icon: <ServerStackIcon {...icon} />, name: 'Sign In', path: '/sign-in', element: <SignIn /> },
       { icon: <RectangleStackIcon {...icon} />, name: 'Sign Up', path: '/sign-up', element: <SignUp /> },
-      { icon: <PlusIcon {...icon} />, name: 'Crear Empleado', path: 'employees/create', element: <EmployeeForm /> },
-      { icon: <UserCircleIcon {...icon} />, name: 'Mis Documentos', path: 'my-documents', element: <EmployeeDocumentsPage /> },
-      { icon: <PlusIcon {...icon} />, name: 'Crear Vínculo', path: 'employment-links/create', element: <EmploymentLinkForm /> },
-      { icon: <TableCellsIcon {...icon} />, name: 'Vínculos', path: 'employment-links', element: <EmploymentLinkList /> }
+      { path: 'employees/create', element: <EmployeeForm /> },
+      { path: 'my-documents', element: <EmployeeDocumentsPage /> },
+      { path: 'employment-links/create', element: <EmploymentLinkForm /> },
+      { path: 'employment-links', element: <EmploymentLinkList /> }
     ]
   }
 ];

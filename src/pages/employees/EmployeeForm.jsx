@@ -10,6 +10,8 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/services/api';
 import { useCatalogs } from '@/hooks/useCatalogs';
+import { useContext } from 'react';
+import { EmpresaContext } from '@/context/EmpresaContext';
 
 export default function EmployeeForm() {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ export default function EmployeeForm() {
     address: '', ethnicity: '', socioeconomic_stratum: '',
     position: '', work_area: '', company: '',
   });
+  const { empresaId } = useContext(EmpresaContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -72,7 +75,7 @@ export default function EmployeeForm() {
       if (isEditing) {
         await api.put(`/employees/${id}/`, formData);
       } else {
-        await api.post('/employees/', formData);
+        await api.post('/employees/', { ...formData, company: empresaId });
       }
       navigate('/dashboard/employees');
     } catch {
