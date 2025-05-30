@@ -1,25 +1,18 @@
-// src/components/Calendar.jsx
 import React, { useTransition } from "react";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import { useActivities } from "@/hooks/useActivities";
 
 dayjs.locale("es");
 
-export default function Calendar() {
+export default function Calendar({ activities = [], selectedMonth, selectedYear }) {
   const navigate = useNavigate();
   const [isPending, startTransition] = useTransition();
 
-  const today        = dayjs();
-  const month        = today.month() + 1;
-  const year         = today.year();
-  const startOfMonth = today.startOf("month").startOf("week");
-  const endOfMonth   = today.endOf("month").endOf("week");
+  const visibleDate = dayjs(`${selectedYear ?? dayjs().year()}-${String((selectedMonth ?? dayjs().month()) + 1).padStart(2, '0')}-01`);
+  const startOfMonth = visibleDate.startOf("month").startOf("week");
+  const endOfMonth = visibleDate.endOf("month").endOf("week");
 
-  const { activities, loading, error } = useActivities({ month, year });
-
-  // build days array
   const days = [];
   let cursor = startOfMonth.clone();
   while (cursor.isBefore(endOfMonth, "day")) {
@@ -39,13 +32,14 @@ export default function Calendar() {
 
   return (
     <div className="p-4">
-      {loading && <div className="text-center text-blue-600 mb-2">Cargando…</div>}
-      {error   && <div className="text-center text-red-600 mb-2">{error}</div>}
+      {activities.length === 0 && (
+        <div className="text-center text-blue-600 mb-2">No hay actividades</div>
+      )}
 
       <div className="grid grid-cols-7 gap-2">
         {days.map((day) => {
-          const dayStr   = day.format("YYYY-MM-DD");
-          const dayActs  = activities.filter(a =>
+          const dayStr = day.format("YYYY-MM-DD");
+          const dayActs = activities.filter(a =>
             dayjs(a.start_date).isSame(day, "day")
           );
 
@@ -54,7 +48,6 @@ export default function Calendar() {
               key={dayStr}
               className="border rounded-lg p-2 h-28 flex flex-col"
             >
-              {/* always show + so you can add multiple */}
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-500">{day.format("D")}</span>
                 <button

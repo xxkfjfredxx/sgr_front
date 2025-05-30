@@ -1,4 +1,3 @@
-// src/pages/activities/ActivityDetail.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
@@ -9,21 +8,20 @@ import { EmpresaContext } from "@/context/EmpresaContext";
 
 export default function ActivityDetail() {
   const { empresaId } = useContext(EmpresaContext);
-  const { id } = useParams();              // ← aquí
-  const activityId = id;                    // renombramos para claridad
+  const { id: activityId } = useParams();
   const { search } = useLocation();
   const dateParam = new URLSearchParams(search).get("date");
 
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    title:       "",
+    title: "",
     description: "",
-    start_date:  dateParam || "",
-    end_date:    dateParam || "",
-    status:      "pending",
+    start_date: dateParam || "",
+    end_date: dateParam || "",
+    status: "pending",
   });
-  const [loading, setLoading]     = useState(!!activityId);
-  const [error, setError]         = useState(null);
+  const [loading, setLoading] = useState(!!activityId);
+  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -32,11 +30,11 @@ export default function ActivityDetail() {
     api.get(`/activities/${activityId}/`)
       .then((res) => {
         setForm({
-          title:       res.data.title,
+          title: res.data.title,
           description: res.data.description || "",
-          start_date:  res.data.start_date,
-          end_date:    res.data.end_date,
-          status:      res.data.status,
+          start_date: res.data.start_date,
+          end_date: res.data.end_date,
+          status: res.data.status,
         });
       })
       .catch((e) => setError(e.message))
@@ -68,20 +66,27 @@ export default function ActivityDetail() {
   };
 
   if (loading) return <Typography className="p-4">Cargando…</Typography>;
-  if (error)   return <Typography color="red" className="p-4">{error}</Typography>;
+  if (error) return <Typography color="red" className="p-4">{error}</Typography>;
 
   return (
-    <section className="p-6 max-w-md mx-auto">
+    <section className="p-6 max-w-7xl mx-auto">
+      <div className="mb-4">
+        <Button variant="outlined" size="sm" onClick={() => navigate(-1)}>
+          ← Volver
+        </Button>
+      </div>
+
       <Card>
-        <CardHeader>
-          <Typography variant="h6">
-            {activityId ? "Editar actividad" : "Nueva actividad"}
+        <CardHeader floated={false} shadow={false} className="bg-gray-100 px-6 py-4">
+          <Typography variant="h6" color="blue-gray">
+            {activityId ? "Editar Actividad" : "Nueva Actividad"}
           </Typography>
         </CardHeader>
-        <CardBody>
+
+        <CardBody className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700">Título</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
               <Input
                 name="title"
                 value={form.title}
@@ -89,17 +94,19 @@ export default function ActivityDetail() {
                 required
               />
             </div>
+
             <div>
-              <label className="block text-gray-700">Descripción</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
               <Input
                 name="description"
                 value={form.description}
                 onChange={handleChange}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700">Inicio</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
                 <Input
                   type="date"
                   name="start_date"
@@ -108,8 +115,9 @@ export default function ActivityDetail() {
                   required
                 />
               </div>
+
               <div>
-                <label className="block text-gray-700">Fin</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Fin</label>
                 <Input
                   type="date"
                   name="end_date"
@@ -119,20 +127,22 @@ export default function ActivityDetail() {
                 />
               </div>
             </div>
+
             <div>
-              <label className="block text-gray-700">Estado</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
               <select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="pending">pending</option>
-                <option value="in_progress">in_progress</option>
-                <option value="completed">completed</option>
-                <option value="cancelled">cancelled</option>
+                <option value="pending">Pendiente</option>
+                <option value="in_progress">En progreso</option>
+                <option value="completed">Completada</option>
+                <option value="cancelled">Cancelada</option>
               </select>
             </div>
+
             <Button
               type="submit"
               disabled={submitting}

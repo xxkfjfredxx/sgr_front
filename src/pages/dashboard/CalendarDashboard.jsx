@@ -21,12 +21,11 @@ export default function CalendarDashboard() {
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
 
-  const formattedMonth = useMemo(() => {
-    const month = String(currentMonth + 1).padStart(2, "0");
-    return `${currentYear}-${month}`;
-  }, [currentMonth, currentYear]);
-
-  const { activities, loading } = useActivities(formattedMonth, empresaActivaId);
+  // ✅ Corrección aquí: se pasa el mes y año como objeto
+  const { activities, loading } = useActivities({
+    month: currentMonth + 1,
+    year: currentYear,
+  });
 
   const handlePrevMonth = () => {
     const date = dayjs(`${currentYear}-${currentMonth + 1}-01`).subtract(1, "month");
@@ -63,15 +62,14 @@ export default function CalendarDashboard() {
           {monthNames[(currentMonth + 1) % 12]} →
         </Button>
 
-        {/* Año en una segunda línea centrado */}
         <div className="w-full flex justify-center">
-        <Select
-          label="Año"
-          value={String(currentYear)}
-          onChange={handleYearChange}
-          containerProps={{ className: "min-w-[7rem] w-auto" }}
-          labelProps={{ className: "left-0" }}
-        >
+          <Select
+            label="Año"
+            value={String(currentYear)}
+            onChange={handleYearChange}
+            containerProps={{ className: "min-w-[7rem] w-auto" }}
+            labelProps={{ className: "left-0" }}
+          >
             {Array.from({ length: 10 }, (_, i) => {
               const year = dayjs().year() - 5 + i;
               return (
@@ -87,7 +85,11 @@ export default function CalendarDashboard() {
       {loading ? (
         <p className="text-blue-600 text-center">Cargando actividades...</p>
       ) : (
-        <Calendar activities={activities} />
+        <Calendar
+          activities={activities}
+          selectedMonth={currentMonth}
+          selectedYear={currentYear}
+        />
       )}
     </div>
   );

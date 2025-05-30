@@ -6,9 +6,12 @@ const api = axios.create({
 
 // Interceptor para agregar token a cada request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Token ${token}`;
+  // ❗ Evita enviar el token si la URL es login
+  if (!config.url.includes('login')) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Token ${token}`;
+    }
   }
 
   const empresaId = localStorage.getItem("empresaActivaId");
