@@ -1,13 +1,15 @@
 export function useAuthUser() {
-    
-    const employeeId = localStorage.getItem('employeeId');
-    const userId = localStorage.getItem('userId');
-    const username = localStorage.getItem('username');
-    const email = localStorage.getItem('email');
-    const role = localStorage.getItem('role');
-    const isStaff = localStorage.getItem('isStaff') === "true";
-    const isSuperuser = localStorage.getItem('isSuperuser') === "true";
-    const token = localStorage.getItem('token');
-  
-    return { employeeId, userId, username, email, role, isStaff, isSuperuser, token };
-  }
+  const user = {
+    id: localStorage.getItem("userId"),
+    username: localStorage.getItem("username"),
+    email: localStorage.getItem("email"),
+    employee_id: localStorage.getItem("employeeId"),
+    is_staff: localStorage.getItem("isStaff") === "true",
+    is_superuser: localStorage.getItem("isSuperuser") === "true",
+    role: JSON.parse(localStorage.getItem("role") || "null"),
+  };
+
+  const token = localStorage.getItem("token");
+
+  return { user, token };
+}

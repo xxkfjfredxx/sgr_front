@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Button,
   Input,
@@ -10,24 +10,41 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/services/api';
 import { useCatalogs } from '@/hooks/useCatalogs';
-import { useContext } from 'react';
 import { EmpresaContext } from '@/context/EmpresaContext';
 
 export default function EmployeeForm() {
   const navigate = useNavigate();
-  const { id } = useParams();           // captura `:id` de /dashboard/employees/:id/edit
+  const { id } = useParams();
   const isEditing = Boolean(id);
 
-  const { positions = [], workAreas = [], companies = [], loading: loadingCatalogs, error: errorCatalogs } = useCatalogs();
+  const {
+    positions = [],
+    workAreas = [],
+    companies = [],
+    loading: loadingCatalogs,
+    error: errorCatalogs,
+  } = useCatalogs();
 
   const [formData, setFormData] = useState({
-    first_name: '', last_name: '', document: '',
-    is_active: true, birth_date: '', gender: '',
-    eps: '', afp: '', education: '',
-    marital_status: '', emergency_contact: '', phone_contact: '',
-    address: '', ethnicity: '', socioeconomic_stratum: '',
-    position: '', work_area: '', company: '',
+    first_name: '',
+    last_name: '',
+    document: '',
+    is_active: true,
+    birth_date: '',
+    gender: '',
+    eps: '',
+    afp: '',
+    education: '',
+    marital_status: '',
+    emergency_contact: '',
+    phone_contact: '',
+    address: '',
+    ethnicity: '',
+    socioeconomic_stratum: '',
+    position: '',
+    work_area: '',
   });
+
   const { empresaId } = useContext(EmpresaContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,7 +52,8 @@ export default function EmployeeForm() {
   useEffect(() => {
     if (!isEditing) return;
     setLoading(true);
-    api.get(`/employees/${id}/`)
+    api
+      .get(`/employees/${id}/`)
       .then(({ data }) => {
         setFormData({
           first_name: data.first_name || '',
@@ -55,7 +73,6 @@ export default function EmployeeForm() {
           socioeconomic_stratum: data.socioeconomic_stratum || '',
           position: data.position?.toString() || '',
           work_area: data.work_area?.toString() || '',
-          company: data.company?.toString() || '',
         });
       })
       .catch(() => setError('Error cargando datos del empleado'))
@@ -64,7 +81,10 @@ export default function EmployeeForm() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -91,16 +111,32 @@ export default function EmployeeForm() {
         {isEditing ? 'Editar Empleado' : 'Crear Empleado'}
       </Typography>
 
-      {loadingCatalogs && <div className="flex items-center gap-2 mb-4 text-blue-600"><Spinner className="h-5 w-5" /> Cargando catálogos...</div>}
-      {errorCatalogs && <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">⚠️ Error catálogos: {errorCatalogs}</div>}
-      {loading && <div className="flex items-center gap-2 mb-4 text-blue-600"><Spinner className="h-5 w-5" /> Procesando...</div>}
-      {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">⚠️ {error}</div>}
+      {loadingCatalogs && (
+        <div className="flex items-center gap-2 mb-4 text-blue-600">
+          <Spinner className="h-5 w-5" /> Cargando catálogos...
+        </div>
+      )}
+      {errorCatalogs && (
+        <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+          ⚠️ Error catálogos: {errorCatalogs}
+        </div>
+      )}
+      {loading && (
+        <div className="flex items-center gap-2 mb-4 text-blue-600">
+          <Spinner className="h-5 w-5" /> Procesando...
+        </div>
+      )}
+      {error && (
+        <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+          ⚠️ {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="First Name"        name="first_name" value={formData.first_name} onChange={handleChange} required />
-        <Input label="Last Name"         name="last_name"  value={formData.last_name}  onChange={handleChange} required />
-        <Input label="Document"          name="document"   value={formData.document}   onChange={handleChange} required />
-        <Input label="Birth Date"        name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} />
+        <Input label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required />
+        <Input label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required />
+        <Input label="Document" name="document" value={formData.document} onChange={handleChange} required />
+        <Input label="Birth Date" name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} />
 
         <Select label="Gender" value={formData.gender} onChange={(val) => setFormData((f) => ({ ...f, gender: val }))}>
           <Option value="Male">Male</Option>
@@ -108,9 +144,9 @@ export default function EmployeeForm() {
           <Option value="Other">Other</Option>
         </Select>
 
-        <Input label="EPS"                name="eps"        value={formData.eps}        onChange={handleChange} />
-        <Input label="AFP"                name="afp"        value={formData.afp}        onChange={handleChange} />
-        <Input label="Education"          name="education"  value={formData.education}  onChange={handleChange} />
+        <Input label="EPS" name="eps" value={formData.eps} onChange={handleChange} />
+        <Input label="AFP" name="afp" value={formData.afp} onChange={handleChange} />
+        <Input label="Education" name="education" value={formData.education} onChange={handleChange} />
 
         <Select label="Marital Status" value={formData.marital_status} onChange={(val) => setFormData((f) => ({ ...f, marital_status: val }))}>
           <Option value="Single">Single</Option>
@@ -120,8 +156,8 @@ export default function EmployeeForm() {
         </Select>
 
         <Input label="Emergency Contact" name="emergency_contact" value={formData.emergency_contact} onChange={handleChange} />
-        <Input label="Phone Contact"     name="phone_contact"    value={formData.phone_contact}    onChange={handleChange} />
-        <Input label="Address"           name="address"          value={formData.address}          onChange={handleChange} />
+        <Input label="Phone Contact" name="phone_contact" value={formData.phone_contact} onChange={handleChange} />
+        <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
 
         <Select label="Ethnicity" value={formData.ethnicity} onChange={(val) => setFormData((f) => ({ ...f, ethnicity: val }))}>
           <Option value="None">None</Option>
@@ -142,25 +178,26 @@ export default function EmployeeForm() {
         </Select>
 
         {positions.length > 0 && (
-          <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData((f) => ({ ...f, position: val }))}>
-            {positions.map((pos) => (
-              <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
-            ))}
-          </Select>
+          <>
+            <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData((f) => ({ ...f, position: val }))}>
+              {positions.map((pos) => (
+                <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
+              ))}
+            </Select>
+            {formData.position && (
+              <Typography variant="small" className="text-gray-700 mt-1">
+                Nivel de riesgo: {
+                  positions.find((p) => String(p.id) === formData.position)?.risk_level?.toUpperCase() || "No especificado"
+                }
+              </Typography>
+            )}
+          </>
         )}
 
         {workAreas.length > 0 && (
           <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData((f) => ({ ...f, work_area: val }))}>
             {workAreas.map((area) => (
               <Option key={area.id} value={String(area.id)}>{area.name}</Option>
-            ))}
-          </Select>
-        )}
-
-        {companies.length > 0 && (
-          <Select label="Company (Empresa)" value={formData.company} onChange={(val) => setFormData((f) => ({ ...f, company: val }))}>
-            {companies.map((comp) => (
-              <Option key={comp.id} value={String(comp.id)}>{comp.name}</Option>
             ))}
           </Select>
         )}

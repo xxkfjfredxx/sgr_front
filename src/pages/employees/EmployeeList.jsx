@@ -116,7 +116,7 @@ export default function EmployeeList() {
         </div>
       </CardHeader>
 
-      <CardBody>
+      <CardBody className="overflow-x-auto">
         {!empresaActivaId ? (
           <Typography color="red" className="p-4">Seleccione una empresa para listar empleados.</Typography>
         ) : loading ? (
@@ -126,90 +126,86 @@ export default function EmployeeList() {
         ) : employees.length === 0 ? (
           <Typography color="blue-gray" className="p-4">No se encontraron empleados.</Typography>
         ) : (
-          <>
-            <table className="w-full table-auto text-left">
-              <thead>
-                <tr>
-                  {["Empleado", "Documento", "Teléfono", "Activo", "Docs", "Exámenes Médicos", "Acciones"].map((hdr) => (
-                    <th key={hdr} className="border-b border-gray-200 py-2 px-4">
-                      <Typography variant="small" className="text-xs font-bold uppercase text-gray-500">
-                        {hdr}
-                      </Typography>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="border-b border-gray-100">
-                    <td className="py-3 px-4 flex items-center gap-3">
-                      {emp.avatar ? (
-                        <Avatar size="sm" variant="circular" src={emp.avatar} />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-blue-gray-100 flex items-center justify-center">
-                          <Typography className="text-sm font-semibold text-blue-gray-600">
-                            {renderInitials(emp.first_name, emp.last_name)}
-                          </Typography>
-                        </div>
-                      )}
-                      <div>
-                        <Typography className="text-sm font-semibold text-gray-700">
-                          {emp.first_name} {emp.last_name}
-                        </Typography>
-                        <Typography className="text-xs text-gray-500">{emp.user_email}</Typography>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Typography variant="small" className="text-gray-600">{emp.document}</Typography>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Typography variant="small" className="text-gray-600">{emp.phone_contact || "—"}</Typography>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Typography variant="small" className="text-gray-600">
-                        {emp.employment_links?.some((link) => link.status === "ACTIVE") ? "Sí" : "No"}
-                      </Typography>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/documents`)}>
-                        <DocumentIcon className="h-4 w-4" /> Ver Docs
-                      </Button>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/medical-exams`)}>
-                        <ClipboardDocumentListIcon className="h-4 w-4" /> Ver Exams
-                      </Button>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Button size="sm" variant="text" onClick={() => navigate(`${emp.id}/edit`)}>
-                        Editar
-                      </Button>
-                    </td>
-                  </tr>
+          <table className="w-full table-auto text-left min-w-[1100px]">
+            <thead>
+              <tr>
+                {["Empleado", "Documento", "Teléfono", "Activo", "Docs", "Exámenes Médicos", "Cursos", "Próximos Exámenes", "Acciones"].map((hdr) => (
+                  <th key={hdr} className="border-b border-gray-200 py-2 px-4">
+                    <Typography variant="small" className="text-xs font-bold uppercase text-gray-500">
+                      {hdr}
+                    </Typography>
+                  </th>
                 ))}
-              </tbody>
-            </table>
-
-            <div className="flex justify-between items-center mt-4">
-              <Typography variant="small" color="blue-gray">
-                Página {currentPage} de {totalPages}
-              </Typography>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => goToPage(1)} disabled={currentPage === 1}>
-                  <ChevronDoubleLeftIcon className="h-4 w-4" />
-                </Button>
-                <Button size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
-                  <ChevronLeftIcon className="h-4 w-4" />
-                </Button>
-                <Button size="sm" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
-                  <ChevronRightIcon className="h-4 w-4" />
-                </Button>
-                <Button size="sm" onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages}>
-                  <ChevronDoubleRightIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map((emp) => (
+                <tr key={emp.id} className="border-b border-gray-100">
+                  <td className="py-3 px-4 flex items-center gap-3">
+                    {emp.avatar ? (
+                      <Avatar size="sm" variant="circular" src={emp.avatar} />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-blue-gray-100 flex items-center justify-center">
+                        <Typography className="text-sm font-semibold text-blue-gray-600">
+                          {renderInitials(emp.first_name, emp.last_name)}
+                        </Typography>
+                      </div>
+                    )}
+                    <div>
+                      <Typography className="text-sm font-semibold text-gray-700">
+                        {emp.first_name} {emp.last_name}
+                      </Typography>
+                      <Typography className="text-xs text-gray-500">{emp.user_email}</Typography>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Typography variant="small" className="text-gray-600">{emp.document}</Typography>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Typography variant="small" className="text-gray-600">{emp.phone_contact || "—"}</Typography>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Typography variant="small" className="text-gray-600">
+                      {emp.employment_links?.some((link) => link.status === "ACTIVE") ? "Sí" : "No"}
+                    </Typography>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/documents`)}>
+                      <DocumentIcon className="h-4 w-4" /> Ver Docs
+                    </Button>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Button size="sm" variant="text" className="flex items-center gap-1" onClick={() => navigate(`${emp.id}/medical-exams`)}>
+                      <ClipboardDocumentListIcon className="h-4 w-4" /> Ver Exams
+                    </Button>
+                  </td>
+                  <td className="py-3 px-4">
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {emp.course_expirations?.map((c, i) => (
+                        <li key={`curso-${i}`} className="text-blue-700">
+                          {c.name}: {c.expires_on}
+                        </li>
+                      )) || <li className="text-gray-400">Sin cursos</li>}
+                    </ul>
+                  </td>
+                  <td className="py-3 px-4">
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {emp.exam_expirations?.map((e, i) => (
+                        <li key={`exam-${i}`} className="text-red-600">
+                          {e.type}: {e.expires_on}
+                        </li>
+                      )) || <li className="text-gray-400">Sin exámenes</li>}
+                    </ul>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Button size="sm" variant="text" onClick={() => navigate(`${emp.id}/edit`)}>
+                      Editar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </CardBody>
     </Card>

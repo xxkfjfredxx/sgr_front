@@ -6,7 +6,6 @@ import {
   Spinner,
   Card,
   CardBody,
-  Checkbox,
   Switch,
   Select,
   Option,
@@ -30,10 +29,9 @@ const educationLevels = [
 
 export default function EmployeeWizardForm() {
   const navigate = useNavigate();
-  const { companies = [] } = useCatalogs();
-  const companyList = Array.isArray(companies) ? companies : [];
   const { empresaId } = useContext(EmpresaContext);
   const epsNames = useEpsList();
+  const { positions = [] } = useCatalogs();
 
   const [step, setStep] = useState(1);
   const [employee, setEmployee] = useState({
@@ -49,54 +47,21 @@ export default function EmployeeWizardForm() {
     education: "",
     is_active: true,
   });
-  const [selectedCompanies, setSelectedCompanies] = useState([]);
-  const [links, setLinks] = useState({});
-  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    setStep(1);
-    setEmployee({
-      first_name: "",
-      last_name: "",
-      document: "",
-      phone_contact: "",
-      emergency_contact: "",
-      emergency_name: "",
-      address: "",
-      afp: "",
-      eps: "",
-      education: "",
-      is_active: true,
-    });
-    setSelectedCompanies([]);
-    setLinks({});
-  }, [empresaId]);
+  const [link, setLink] = useState({
+    position: "",
+    salary: "",
+    start_date: "",
+  });
+
+  const [submitting, setSubmitting] = useState(false);
 
   const handleEmployeeChange = (e) => {
     setEmployee({ ...employee, [e.target.name]: e.target.value });
   };
 
-  const toggleCompany = (cid) => {
-    const exists = selectedCompanies.includes(cid);
-    const newSelection = exists
-      ? selectedCompanies.filter((id) => id !== cid)
-      : [...selectedCompanies, cid];
-    setSelectedCompanies(newSelection);
-
-    const updatedLinks = { ...links };
-    if (!exists) {
-      updatedLinks[cid] = { position: "", salary: "", start_date: "" };
-    } else {
-      delete updatedLinks[cid];
-    }
-    setLinks(updatedLinks);
-  };
-
-  const handleLinkChange = (cid, field, value) => {
-    setLinks((prev) => ({
-      ...prev,
-      [cid]: { ...prev[cid], [field]: value },
-    }));
+  const handleLinkChange = (field, value) => {
+    setLink((prev) => ({ ...prev, [field]: value }));
   };
 
   const formatSalary = (raw) => {
@@ -114,30 +79,22 @@ export default function EmployeeWizardForm() {
           .join("\n");
       }
     }
-    return "Error creando empleado o vínculos";
+    return "Error creando empleado o vínculo";
   };
 
   const handleSubmit = async () => {
-    if (selectedCompanies.length === 0) {
-      alert("Debe seleccionar al menos una empresa para asociar al empleado.");
-      return;
-    }
     setSubmitting(true);
     try {
       const { data } = await api.post("/employees/", employee);
       const empId = data.id;
-      await Promise.all(
-        selectedCompanies.map((cid) => {
-          const rawSalary = links[cid]?.salary?.toString().replace(/\./g, "") || "0";
-          return api.post("/employment-links/", {
-            employee: empId,
-            company: cid,
-            position: links[cid]?.position,
-            salary: rawSalary,
-            start_date: links[cid]?.start_date,
-          });
-        })
-      );
+      const rawSalary = link.salary?.toString().replace(/\./g, "") || "0";
+      await api.post("/employment-links/", {
+        employee: empId,
+        company: empresaId,
+        position: link.position,
+        salary: rawSalary,
+        start_date: link.start_date,
+      });
       navigate("/dashboard/employees");
     } catch (err) {
       const msg = parseApiError(err);
@@ -149,11 +106,9 @@ export default function EmployeeWizardForm() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {step === 1 ? (
-        <Typography variant="h4">Información del Empleado</Typography>
-      ) : (
-        <Typography variant="h4">Vincular Empresas</Typography>
-      )}
+      <Typography variant="h4">
+        {step === 1 ? "Información del Empleado" : "Vínculo Laboral"}
+      </Typography>
 
       {step === 1 && (
         <form className="space-y-4">
@@ -186,45 +141,42 @@ export default function EmployeeWizardForm() {
           <div className="flex items-center gap-3">
             <Switch label="Empleado Activo" checked={employee.is_active} onChange={(e) => setEmployee({ ...employee, is_active: e.target.checked })} />
           </div>
+
           <Button onClick={() => setStep(2)} color="blue">Siguiente</Button>
         </form>
       )}
 
       {step === 2 && (
-        <>
-          <Typography variant="h6">Selecciona las empresas</Typography>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-2">
-            {companyList.map((c) => (
-              <Checkbox key={c.id} label={c.name} checked={selectedCompanies.includes(c.id)} onChange={() => toggleCompany(c.id)} />
-            ))}
-          </div>
+        <Card>
+          <CardBody className="space-y-4">
+            <Typography variant="h6">Datos del Vínculo Laboral</Typography>
 
-          {selectedCompanies.map((cid) => (
-            <Card key={cid} className="my-4">
-              <CardBody className="space-y-2">
-                <Typography variant="h6">
-                  Vínculo para {companyList.find((c) => c.id === cid)?.name || "Empresa"}
-                </Typography>
+            <AutocompleteCargo
+              value={link.position}
+              onChange={(val) => handleLinkChange("position", val)}
+            />
 
-                <AutocompleteCargo value={links[cid]?.position || ""} onChange={(val) => handleLinkChange(cid, "position", val)} />
+            <Input
+              label="Salario"
+              value={link.salary}
+              onChange={(e) => handleLinkChange("salary", formatSalary(e.target.value))}
+            />
 
-                <Input label="Salario" value={links[cid]?.salary || ""} onChange={(e) => {
-                  const formatted = formatSalary(e.target.value);
-                  handleLinkChange(cid, "salary", formatted);
-                }} />
+            <Input
+              label="Fecha de Inicio"
+              type="date"
+              value={link.start_date}
+              onChange={(e) => handleLinkChange("start_date", e.target.value)}
+            />
 
-                <Input label="Fecha inicio" type="date" value={links[cid]?.start_date || ""} onChange={(e) => handleLinkChange(cid, "start_date", e.target.value)} />
-              </CardBody>
-            </Card>
-          ))}
-
-          <div className="flex justify-between">
-            <Button onClick={() => setStep(1)} variant="outlined">Atrás</Button>
-            <Button onClick={handleSubmit} disabled={submitting} color="green">
-              {submitting ? <Spinner className="h-4 w-4" /> : "Crear Empleado y Vínculos"}
-            </Button>
-          </div>
-        </>
+            <div className="flex justify-between">
+              <Button onClick={() => setStep(1)} variant="outlined">Atrás</Button>
+              <Button onClick={handleSubmit} disabled={submitting} color="green">
+                {submitting ? <Spinner className="h-4 w-4" /> : "Crear Empleado y Vínculo"}
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
       )}
     </div>
   );

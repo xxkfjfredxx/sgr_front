@@ -64,7 +64,7 @@ export const routes = [
       { icon: <TableCellsIcon {...icon} />, name: 'Indicadores SST', path: 'indicators', element: <IndicatorDashboard /> },
 
       // Empleados
-      { icon: <PlusIcon {...icon} />, name: 'Crear Empleado', path: 'employees/create-wizard', element: <EmployeeWizardForm /> },
+      { path: 'employees/create-wizard', element: <EmployeeWizardForm /> },
       { icon: <UserCircleIcon {...icon} />, name: 'Lista Empleados', path: 'employees', element: <EmployeeList /> },
       { path: 'employees/:id/edit', element: <EmployeeForm /> },
       { path: 'employees/:id/documents', element: <EmployeeDocumentsPage /> },

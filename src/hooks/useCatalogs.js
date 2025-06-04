@@ -4,23 +4,18 @@ import api from '@/services/api';
 export function useCatalogs() {
   const [positions, setPositions] = useState([]);
   const [workAreas, setWorkAreas] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCatalogs = async () => {
       try {
-        const [posRes, areaRes, compRes] = await Promise.all([
+        const [posRes, areaRes] = await Promise.all([
           api.get('/positions/'),
           api.get('/work-areas/'),
-          api.get('/companies/'),
         ]);
         setPositions(posRes.data);
         setWorkAreas(areaRes.data);
-        const raw = compRes.data;
-        const parsed = Array.isArray(raw.results) ? raw.results : raw;
-        setCompanies(parsed);
       } catch (err) {
         const msg = err.response?.data?.detail || err.response?.data?.message || err.message;
         setError(msg);
@@ -33,5 +28,5 @@ export function useCatalogs() {
     fetchCatalogs();
   }, []);
 
-  return { positions, workAreas, companies, loading, error };
+  return { positions, workAreas, loading, error };
 }
