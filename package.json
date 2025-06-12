@@ -12,6 +12,8 @@
     "@heroicons/react": "2.0.18",
     "@material-tailwind/react": "^2.1.4",
     "@shadcn/ui": "^0.0.4",
+    "@tanstack/react-query": "^5.80.2",
+    "@tanstack/react-query-devtools": "^5.80.2",
     "apexcharts": "3.44.0",
     "axios": "^1.8.4",
     "dayjs": "^1.11.13",

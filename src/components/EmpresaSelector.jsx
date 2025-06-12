@@ -8,9 +8,10 @@ export default function EmpresaSelector() {
   const { empresaId, setEmpresaId } = useContext(EmpresaContext);
   const { user } = useAuthUser();
   const [empresas, setEmpresas] = useState([]);
+  const [empresasCargadas, setEmpresasCargadas] = useState(false); // ✅ evita múltiples llamadas
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || empresasCargadas) return;
 
     const isSuperAdmin =
       user.is_superuser ||
@@ -27,13 +28,14 @@ export default function EmpresaSelector() {
       .then((res) => {
         console.log("Empresas cargadas:", res.data.results);
         setEmpresas(res.data.results);
+        setEmpresasCargadas(true); // ✅ marca como cargado
       })
       .catch((err) => {
         console.error("Error cargando empresas:", err);
       });
-  }, [user]);
+  }, [user, empresasCargadas]);
 
-  // ✅ Seleccionar automáticamente si hay una sola empresa
+  // ✅ Auto-selección si solo hay una empresa
   useEffect(() => {
     if (empresas.length === 1 && !empresaId) {
       setEmpresaId(empresas[0].id);
@@ -60,7 +62,11 @@ export default function EmpresaSelector() {
           focus:border-transparent
         "
         value={empresaId ?? ""}
-        onChange={(e) => setEmpresaId(Number(e.target.value))}>
+        onChange={(e) => setEmpresaId(Number(e.target.value))}
+      >
+        <option value="" disabled>
+          Selecciona empresa
+        </option>
         {empresas.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}

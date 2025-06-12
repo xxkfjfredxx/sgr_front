@@ -1,4 +1,3 @@
-// src/pages/occupational-health/EmployeeMedicalExamsAdminPage.jsx
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -10,6 +9,7 @@ import {
   Alert,
   Collapse,
   Button,
+  Spinner,
 } from "@material-tailwind/react";
 import { ChevronDownIcon, ChevronRightIcon, DocumentTextIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -17,16 +17,11 @@ import { useEmployeeMedicalExams } from "@/hooks/useEmployeeMedicalExams";
 import EmployeeMedicalExamForm from "@/pages/occupational-health/EmployeeMedicalExamForm";
 
 export default function EmployeeMedicalExamsAdminPage() {
-  const { employees, loading: loadingEmployees } = useEmployees();
+  const { data: employees = [], isLoading: loadingEmployees, isError: errorEmployees } = useEmployees();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-  const [error, setError] = useState(null);
   const [openSections, setOpenSections] = useState({ Ingreso: true, Periódico: false, Retiro: false });
 
-  const { exams, loading, error: examError, uploadExam } = useEmployeeMedicalExams(selectedEmployeeId);
-
-  useEffect(() => {
-    setError(examError);
-  }, [examError]);
+  const { exams = [], loading, error, uploadExam } = useEmployeeMedicalExams(selectedEmployeeId);
 
   const renderFileIcon = (url) => {
     if (!url) return null;
@@ -78,7 +73,11 @@ export default function EmployeeMedicalExamsAdminPage() {
 
       <CardBody>
         {loadingEmployees ? (
-          <Typography color="gray">Cargando empleados...</Typography>
+          <div className="flex items-center gap-2 text-blue-600">
+            <Spinner className="h-4 w-4" /> Cargando empleados...
+          </div>
+        ) : errorEmployees ? (
+          <Alert color="red">Error al cargar empleados.</Alert>
         ) : (
           <Select
             label="Selecciona un empleado"

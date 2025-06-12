@@ -15,7 +15,11 @@ import api from "@/services/api";
 
 export default function EmploymentLinkForm({ onSave = () => {} }) {
   const { empresaActivaId } = useEmpresaActiva();
-  const { employees, loading: loadingEmps, error: errorEmps } = useEmployees();
+  const {
+    data: employees = [],
+    isLoading: loadingEmps,
+    error: errorEmps,
+  } = useEmployees();
   const { links, loading: loadingLinks } = useEmploymentLinks(empresaActivaId);
 
   const [selectedEmp, setSelectedEmp] = useState("");
@@ -31,7 +35,9 @@ export default function EmploymentLinkForm({ onSave = () => {} }) {
   useEffect(() => {
     if (!selectedEmp) return;
     const existing = links.find(
-      (l) => l.employee?.toString() === selectedEmp && l.company?.toString() === empresaActivaId?.toString()
+      (l) =>
+        l.employee?.toString() === selectedEmp &&
+        l.company?.toString() === empresaActivaId?.toString()
     );
     if (existing) {
       setPosition(existing.position || "");
@@ -58,7 +64,11 @@ export default function EmploymentLinkForm({ onSave = () => {} }) {
     e.preventDefault();
     if (!selectedEmp || !position || !salary || !startDate) {
       setSaveError("Todos los campos son obligatorios");
-      setToast({ open: true, message: "Completa todos los campos requeridos", type: "warning" });
+      setToast({
+        open: true,
+        message: "Completa todos los campos requeridos",
+        type: "warning",
+      });
       return;
     }
     setSaving(true);
@@ -72,10 +82,18 @@ export default function EmploymentLinkForm({ onSave = () => {} }) {
         salary: rawSalary,
         start_date: startDate,
       });
-      setToast({ open: true, message: "Vínculo creado exitosamente", type: "success" });
+      setToast({
+        open: true,
+        message: "Vínculo creado exitosamente",
+        type: "success",
+      });
       onSave();
     } catch (err) {
-      setToast({ open: true, message: "Error al guardar el vínculo", type: "error" });
+      setToast({
+        open: true,
+        message: "Error al guardar el vínculo",
+        type: "error",
+      });
       setSaveError(err.response?.data || err.message);
     } finally {
       setSaving(false);
@@ -102,7 +120,7 @@ export default function EmploymentLinkForm({ onSave = () => {} }) {
             <Spinner className="h-4 w-4" /> Cargando empleados…
           </div>
         ) : errorEmps ? (
-          <div className="text-red-600">{errorEmps}</div>
+          <div className="text-red-600">{errorEmps.message}</div>
         ) : (
           <Select
             label="Empleado"
@@ -158,11 +176,13 @@ export default function EmploymentLinkForm({ onSave = () => {} }) {
             <p className="text-sm">No hay vínculos registrados.</p>
           ) : (
             <ul className="text-sm list-disc list-inside text-gray-700">
-              {links.filter((l) => l.employee?.toString() === selectedEmp).map((l) => (
-                <li key={l.id}>
-                  {l.position} desde {l.start_date} — Estado: {l.status}
-                </li>
-              ))}
+              {links
+                .filter((l) => l.employee?.toString() === selectedEmp)
+                .map((l) => (
+                  <li key={l.id}>
+                    {l.position} desde {l.start_date} — Estado: {l.status}
+                  </li>
+                ))}
             </ul>
           )}
         </div>
