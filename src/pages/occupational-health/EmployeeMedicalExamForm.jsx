@@ -1,4 +1,3 @@
-// src/pages/occupational-health/EmployeeMedicalExamForm.jsx
 import React, { useState } from "react";
 import {
   Button,
@@ -19,12 +18,11 @@ export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess })
   const [form, setForm] = useState({
     exam_type: "",
     exam_phase: "",
-    sub_type: "",
-    risk_level: "",
     date: "",
-    entity: "",
+    entity_ips: "",
     aptitude: "",
     recommendations: "",
+    next_due_months: "",
     file: null,
   });
 
@@ -37,6 +35,13 @@ export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess })
       ...prev,
       [name]: files ? files[0] : value,
     }));
+  };
+
+  const computeNextDue = () => {
+    if (!form.date || !form.next_due_months) return "";
+    const d = new Date(form.date);
+    d.setMonth(d.getMonth() + parseInt(form.next_due_months));
+    return d.toISOString().split("T")[0];
   };
 
   const handleSubmit = async (e) => {
@@ -55,29 +60,28 @@ export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess })
       formData.append("company", empresaActivaId);
       formData.append("exam_type", form.exam_type);
       formData.append("exam_phase", form.exam_phase);
-      formData.append("sub_type", form.sub_type);
-      formData.append("risk_level", form.risk_level);
       formData.append("date", form.date);
-      formData.append("entity", form.entity);
+      formData.append("entity_ips", form.entity_ips);
       formData.append("aptitude", form.aptitude);
       formData.append("recommendations", form.recommendations);
+      formData.append("next_due_months", form.next_due_months);
       formData.append("file", form.file);
+
+      const nextDue = computeNextDue();
+      formData.append("metrics", JSON.stringify({ next_due: nextDue }));
 
       await uploadExam(formData);
       setSuccess(true);
-      if (typeof onUploadSuccess === "function") {
-        onUploadSuccess();
-      }
+      if (typeof onUploadSuccess === "function") onUploadSuccess();
 
       setForm({
         exam_type: "",
         exam_phase: "",
-        sub_type: "",
-        risk_level: "",
         date: "",
-        entity: "",
+        entity_ips: "",
         aptitude: "",
         recommendations: "",
+        next_due_months: "",
         file: null,
       });
     } catch (err) {
@@ -93,6 +97,25 @@ export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess })
     );
   }
 
+  const examTypes = [
+    "Médico general",
+    "Médico ocupacional",
+    "Ingreso osteomuscular con énfasis en altura",
+    "Laboratorio",
+    "Visión",
+    "Auditivo",
+    "Espirometría",
+    "Electrocardiograma",
+    "Radio de tórax",
+    "Psicológico",
+    "Psicotécnico",
+    "Osteomuscular",
+    "Pruebas de embarazo",
+    "Específicas",
+  ];
+
+  const vencimientoOpciones = [3, 6, 9, 12, 15, 18, 21, 24];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Typography variant="h6">Subir nuevo examen médico</Typography>
@@ -101,42 +124,63 @@ export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess })
       {success && <Alert color="green">Examen subido correctamente.</Alert>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="Tipo de Examen (general)" name="exam_type" value={form.exam_type} onChange={handleChange} required />
+        <Select
+          label="Tipo de Examen"
+          name="exam_type"
+          value={form.exam_type}
+          onChange={(val) => setForm(prev => ({ ...prev, exam_type: val }))}
+          required
+        >
+          {examTypes.map((t) => (
+            <Option key={t} value={t}>{t}</Option>
+          ))}
+        </Select>
 
-        <Select label="Fase del Examen" value={form.exam_phase} onChange={(val) => setForm(prev => ({ ...prev, exam_phase: val }))} required>
+        <Select
+          label="Fase del Examen"
+          value={form.exam_phase}
+          onChange={(val) => setForm(prev => ({ ...prev, exam_phase: val }))}
+          required
+        >
           <Option value="Ingreso">Ingreso</Option>
           <Option value="Periódico">Periódico</Option>
           <Option value="Retiro">Retiro</Option>
         </Select>
 
-        <Select label="Subtipo de Examen" value={form.sub_type} onChange={(val) => setForm(prev => ({ ...prev, sub_type: val }))}>
-          <Option value="Audiometría">Audiometría</Option>
-          <Option value="Espirometría">Espirometría</Option>
-          <Option value="Visión">Visión</Option>
-          <Option value="Laboratorio">Laboratorio</Option>
-          <Option value="Presión arterial">Presión arterial</Option>
-          <Option value="Otro">Otro</Option>
-        </Select>
-
-        <Select label="Nivel de Riesgo" value={form.risk_level} onChange={(val) => setForm(prev => ({ ...prev, risk_level: val }))}>
-          <Option value="I">Bajo (I)</Option>
-          <Option value="II">Medio (II)</Option>
-          <Option value="III">Alto (III)</Option>
-          <Option value="IV">Crítico (IV)</Option>
-        </Select>
-
         <Input label="Fecha" type="date" name="date" value={form.date} onChange={handleChange} required />
-        <Input label="Entidad" name="entity" value={form.entity} onChange={handleChange} />
-      </div>
+        <Input label="Entidad IPS" name="entity_ips" value={form.entity_ips} onChange={handleChange} required />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Select label="¿Apto?" name="aptitude" value={form.aptitude} onChange={(val) => setForm(prev => ({ ...prev, aptitude: val }))}>
+        <Select
+          label="¿Apto?"
+          name="aptitude"
+          value={form.aptitude}
+          onChange={(val) => setForm(prev => ({ ...prev, aptitude: val }))}
+        >
           <Option value="Sí">Sí</Option>
           <Option value="No">No</Option>
         </Select>
-        <Input type="file" name="file" label="Archivo (PDF o imagen)" onChange={handleChange} required />
+
+        <Select
+          label="Próximo vencimiento"
+          name="next_due_months"
+          value={form.next_due_months}
+          onChange={(val) => setForm(prev => ({ ...prev, next_due_months: val }))}
+          required
+        >
+          {vencimientoOpciones.map((m) => (
+            <Option key={m} value={m}>{m} meses</Option>
+          ))}
+        </Select>
       </div>
 
+      <Input
+        type="date"
+        label="Próximo examen estimado"
+        value={computeNextDue()}
+        readOnly
+      />
+
+      <Input type="file" name="file" label="Archivo (PDF o imagen)" onChange={handleChange} required />
       <Textarea label="Recomendaciones" name="recommendations" value={form.recommendations} onChange={handleChange} />
 
       <div className="flex justify-end">
