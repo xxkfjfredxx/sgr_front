@@ -70,7 +70,7 @@ export const routes = [
       { path: 'employees/:id/documents', element: <EmployeeDocumentsPage /> },
       { path: 'employees/:id/medical-exams', element: <MedicalExamsPage /> },
       { icon: <UserCircleIcon {...icon} />, name: 'Subir Docs (Admin)', path: 'documents-upload', element: <EmployeeDocumentsAdmin /> },
-      { icon: <UserCircleIcon {...icon} />, name: 'Exámenes Médicos (Admin)', path: 'medical-exams-admin', element: <EmployeeMedicalExamsAdminPage /> },
+      //{ icon: <UserCircleIcon {...icon} />, name: 'Exámenes Médicos (Admin)', path: 'medical-exams-admin', element: <EmployeeMedicalExamsAdminPage /> },
       { icon: <UserCircleIcon {...icon} />, name: 'Mis Exámenes Médicos', path: 'my-medical-exams', element: <MedicalExamSelfPage /> },
 
       // SST

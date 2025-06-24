@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {
-  Button,
-  Input,
-  Typography,
-  Select,
-  Option,
-  Spinner,
-} from '@material-tailwind/react';
+import { Button, Input, Typography, Select, Option, Spinner } from '@material-tailwind/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/services/api';
 import { useCatalogs } from '@/hooks/useCatalogs';
@@ -17,13 +10,7 @@ export default function EmployeeForm() {
   const { id } = useParams();
   const isEditing = Boolean(id);
 
-  const {
-    positions = [],
-    workAreas = [],
-    companies = [],
-    loading: loadingCatalogs,
-    error: errorCatalogs,
-  } = useCatalogs();
+  const { positions = [], workAreas = [], companies = [], loading: loadingCatalogs, error: errorCatalogs } = useCatalogs();
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -43,6 +30,7 @@ export default function EmployeeForm() {
     socioeconomic_stratum: '',
     position: '',
     work_area: '',
+    compensation_fund: ''
   });
 
   const { empresaId } = useContext(EmpresaContext);
@@ -70,27 +58,44 @@ export default function EmployeeForm() {
           phone_contact: data.phone_contact || '',
           address: data.address || '',
           ethnicity: data.ethnicity || '',
+          compensation_fund: data.compensation_fund || '',
           socioeconomic_stratum: data.socioeconomic_stratum || '',
           position: data.position?.toString() || '',
-          work_area: data.work_area?.toString() || '',
+          work_area: data.work_area?.toString() || ''
         });
       })
-      .catch(() => setError('Error cargando datos del empleado'))
+      .catch(err => {
+        const data = err?.response?.data;
+        if (typeof data === 'object') {
+          const formatted = Object.entries(data)
+            .map(([field, errors]) => `${field}: ${errors.join(' ')}`)
+            .join('\n');
+          setError(formatted);
+        } else {
+          setError('Hubo un error cargando el empleado');
+        }
+      })
       .finally(() => setLoading(false));
   }, [id, isEditing]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    if (!formData.birth_date || !formData.socioeconomic_stratum) {
+      setError('Debe completar la fecha de nacimiento y el estrato socioeconómico.');
+      return;
+    }
+
+    setLoading(true);
     try {
       if (isEditing) {
         await api.put(`/employees/${id}/`, formData);
@@ -98,8 +103,16 @@ export default function EmployeeForm() {
         await api.post('/employees/', { ...formData, company: empresaId });
       }
       navigate('/dashboard/employees');
-    } catch {
-      setError('Hubo un error guardando el empleado');
+    } catch (err) {
+      const data = err?.response?.data;
+      if (typeof data === 'object') {
+        const formatted = Object.entries(data)
+          .map(([field, errors]) => `${field}: ${errors.join(' ')}`)
+          .join('\n');
+        setError(formatted);
+      } else {
+        setError('Hubo un error guardando el empleado');
+      }
     } finally {
       setLoading(false);
     }
@@ -116,39 +129,53 @@ export default function EmployeeForm() {
           <Spinner className="h-5 w-5" /> Cargando catálogos...
         </div>
       )}
-      {errorCatalogs && (
-        <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">
-          ⚠️ Error catálogos: {errorCatalogs}
-        </div>
-      )}
+      {errorCatalogs && <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">⚠️ Error catálogos: {errorCatalogs}</div>}
       {loading && (
         <div className="flex items-center gap-2 mb-4 text-blue-600">
           <Spinner className="h-5 w-5" /> Procesando...
         </div>
       )}
-      {error && (
-        <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">
-          ⚠️ {error}
-        </div>
-      )}
+      {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">⚠️ {error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required />
         <Input label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required />
         <Input label="Document" name="document" value={formData.document} onChange={handleChange} required />
-        <Input label="Birth Date" name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} />
+        <Input label="Birth Date" name="birth_date" type="date" value={formData.birth_date} onChange={handleChange} required />
 
-        <Select label="Gender" value={formData.gender} onChange={(val) => setFormData((f) => ({ ...f, gender: val }))}>
+        <Select label="Gender" value={formData.gender} onChange={val => setFormData(f => ({ ...f, gender: val }))}>
           <Option value="Male">Male</Option>
           <Option value="Female">Female</Option>
           <Option value="Other">Other</Option>
+        </Select>
+
+        <Select label="Caja de Compensación" value={formData.compensation_fund} onChange={val => setFormData(f => ({ ...f, compensation_fund: val }))} required>
+          <Option value="Compensar">Compensar</Option>
+          <Option value="Colsubsidio">Colsubsidio</Option>
+          <Option value="Cafam">Cafam</Option>
+          <Option value="Comfama">Comfama</Option>
+          <Option value="Comfenalco Quindío">Comfenalco Quindío</Option>
+          <Option value="Comfenalco Valle">Comfenalco Valle</Option>
+          <Option value="Comfenalco Antioquia">Comfenalco Antioquia</Option>
+          <Option value="ComfaTolima">ComfaTolima</Option>
+          <Option value="Comfacundi">Comfacundi</Option>
+          <Option value="Comfacor">Comfacor</Option>
+          <Option value="Comfamiliar Atlántico">Comfamiliar Atlántico</Option>
+          <Option value="Comfamiliar Risaralda">Comfamiliar Risaralda</Option>
+          <Option value="Comfamiliar Huila">Comfamiliar Huila</Option>
+          <Option value="Comfamiliar Cartagena">Comfamiliar Cartagena</Option>
+          <Option value="Comfacauca">Comfacauca</Option>
+          <Option value="Comfacasanare">Comfacasanare</Option>
+          <Option value="Comfaoriente">Comfaoriente</Option>
+          <Option value="Cajamag">Cajamag (Magdalena)</Option>
+          <Option value="Cajacopi Atlántico">Cajacopi Atlántico</Option>
         </Select>
 
         <Input label="EPS" name="eps" value={formData.eps} onChange={handleChange} />
         <Input label="AFP" name="afp" value={formData.afp} onChange={handleChange} />
         <Input label="Education" name="education" value={formData.education} onChange={handleChange} />
 
-        <Select label="Marital Status" value={formData.marital_status} onChange={(val) => setFormData((f) => ({ ...f, marital_status: val }))}>
+        <Select label="Marital Status" value={formData.marital_status} onChange={val => setFormData(f => ({ ...f, marital_status: val }))}>
           <Option value="Single">Single</Option>
           <Option value="Married">Married</Option>
           <Option value="Divorced">Divorced</Option>
@@ -159,7 +186,7 @@ export default function EmployeeForm() {
         <Input label="Phone Contact" name="phone_contact" value={formData.phone_contact} onChange={handleChange} />
         <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
 
-        <Select label="Ethnicity" value={formData.ethnicity} onChange={(val) => setFormData((f) => ({ ...f, ethnicity: val }))}>
+        <Select label="Ethnicity" value={formData.ethnicity} onChange={val => setFormData(f => ({ ...f, ethnicity: val }))}>
           <Option value="None">None</Option>
           <Option value="Afro-Colombian">Afro-Colombian</Option>
           <Option value="Indigenous">Indigenous</Option>
@@ -168,7 +195,7 @@ export default function EmployeeForm() {
           <Option value="Other">Other</Option>
         </Select>
 
-        <Select label="Socioeconomic Stratum" value={formData.socioeconomic_stratum} onChange={(val) => setFormData((f) => ({ ...f, socioeconomic_stratum: val }))}>
+        <Select label="Socioeconomic Stratum" value={formData.socioeconomic_stratum} onChange={val => setFormData(f => ({ ...f, socioeconomic_stratum: val }))} required>
           <Option value="1">1 - Very Low</Option>
           <Option value="2">2 - Low</Option>
           <Option value="3">3 - Medium Low</Option>
@@ -179,25 +206,27 @@ export default function EmployeeForm() {
 
         {positions.length > 0 && (
           <>
-            <Select label="Position (Cargo)" value={formData.position} onChange={(val) => setFormData((f) => ({ ...f, position: val }))}>
-              {positions.map((pos) => (
-                <Option key={pos.id} value={String(pos.id)}>{pos.name}</Option>
+            <Select label="Position (Cargo)" value={formData.position} onChange={val => setFormData(f => ({ ...f, position: val }))}>
+              {positions.map(pos => (
+                <Option key={pos.id} value={String(pos.id)}>
+                  {pos.name}
+                </Option>
               ))}
             </Select>
             {formData.position && (
               <Typography variant="small" className="text-gray-700 mt-1">
-                Nivel de riesgo: {
-                  positions.find((p) => String(p.id) === formData.position)?.risk_level?.toUpperCase() || "No especificado"
-                }
+                Nivel de riesgo: {positions.find(p => String(p.id) === formData.position)?.risk_level?.toUpperCase() || 'No especificado'}
               </Typography>
             )}
           </>
         )}
 
         {workAreas.length > 0 && (
-          <Select label="Work Area (Área)" value={formData.work_area} onChange={(val) => setFormData((f) => ({ ...f, work_area: val }))}>
-            {workAreas.map((area) => (
-              <Option key={area.id} value={String(area.id)}>{area.name}</Option>
+          <Select label="Work Area (Área)" value={formData.work_area} onChange={val => setFormData(f => ({ ...f, work_area: val }))}>
+            {workAreas.map(area => (
+              <Option key={area.id} value={String(area.id)}>
+                {area.name}
+              </Option>
             ))}
           </Select>
         )}
