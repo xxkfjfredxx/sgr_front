@@ -10,9 +10,16 @@ Este proyecto es la interfaz de usuario del sistema de gestión de riesgos labor
 - 🎨 Tailwind CSS
 - 🧠 React Hooks personalizados
 - 🔐 JWT Login (con consumo de backend Django)
-- 📦 axios para consumir API REST
+- 📦 axios para consumir API REST (legacy)
+- 🗃️ Redux Toolkit y RTK Query para el nuevo manejo de estado global
 
 ---
 
-## 📁 Estructura del proyecto
+## 📦 Manejo de estado
 
+El proyecto ahora incluye un store global basado en **Redux Toolkit**. Los datos
+como `empresaId` y la autenticación se almacenan en slices dentro de `src/store`.
+Además, las peticiones a la API se gestionan a través de **RTK Query** en
+`apiSlice.js`.
+
+## 📁 Estructura del proyecto

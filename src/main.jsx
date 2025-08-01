@@ -1,32 +1,36 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 import './i18n';
-import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "@material-tailwind/react";
-import { MaterialTailwindControllerProvider } from "@/context";
-import "../public/css/tailwind.css";
-import { EmpresaProvider } from "@/context/EmpresaContext.jsx";
+import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from '@material-tailwind/react';
+import { MaterialTailwindControllerProvider } from '@/context';
+import '../public/css/tailwind.css';
+import { EmpresaProvider } from '@/context/EmpresaContext.jsx';
+import { Provider } from 'react-redux';
+import { store } from '@/store';
 
 // React Query
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const queryClient = new QueryClient();
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <EmpresaProvider>
-        <BrowserRouter>
-          <ThemeProvider>
-            <MaterialTailwindControllerProvider>
-              <App />
-              <ReactQueryDevtools initialIsOpen={false} />
-            </MaterialTailwindControllerProvider>
-          </ThemeProvider>
-        </BrowserRouter>
-      </EmpresaProvider>
-    </QueryClientProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <EmpresaProvider>
+          <BrowserRouter>
+            <ThemeProvider>
+              <MaterialTailwindControllerProvider>
+                <App />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </MaterialTailwindControllerProvider>
+            </ThemeProvider>
+          </BrowserRouter>
+        </EmpresaProvider>
+      </QueryClientProvider>
+    </Provider>
   </React.StrictMode>
 );
