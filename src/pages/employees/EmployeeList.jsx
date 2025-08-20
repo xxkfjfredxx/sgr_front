@@ -33,7 +33,7 @@ export default function EmployeeList() {
   const [totalPages, setTotalPages] = useState(1);
   const [filterActive, setFilterActive] = useState(true);
   const navigate = useNavigate();
-  const { empresaActivaId } = useEmpresaActiva();
+  const empresaActivaId = useEmpresaActiva();
 
   const fetchData = (page = currentPage, query = search, isActive = filterActive) => {
     if (!empresaActivaId) return;

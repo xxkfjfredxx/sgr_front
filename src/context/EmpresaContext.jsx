@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState } from "react";
 
 export const EmpresaContext = createContext({
   empresaId: null,
@@ -6,20 +6,11 @@ export const EmpresaContext = createContext({
 });
 
 export function EmpresaProvider({ children }) {
-  const [empresaId, setEmpresaId] = useState(null);
-
-  useEffect(() => {
+  // Solo una lectura, al inicializar el state
+  const [empresaId, setEmpresaId] = useState(() => {
     const stored = localStorage.getItem("empresaActivaId");
-    if (stored) {
-      setEmpresaId(Number(stored));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (empresaId !== null) {
-      localStorage.setItem("empresaActivaId", empresaId);
-    }
-  }, [empresaId]);
+    return stored ? Number(stored) : null;
+  });
 
   return (
     <EmpresaContext.Provider value={{ empresaId, setEmpresaId }}>

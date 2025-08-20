@@ -13,7 +13,7 @@ import { useEmpresaActiva } from "@/hooks/useEmpresaActiva";
 
 export default function EmployeeMedicalExamForm({ employeeId, onUploadSuccess }) {
   const { uploadExam } = useEmployeeMedicalExams(employeeId);
-  const { empresaActivaId } = useEmpresaActiva();
+  const empresaActivaId = useEmpresaActiva();
 
   const [form, setForm] = useState({
     exam_type: "",

@@ -37,8 +37,8 @@ const WorkAccidentList = lazy(() => import('@/pages/sst/WorkAccidentList.jsx'));
 const WorkAccidentForm = lazy(() => import('@/pages/sst/WorkAccidentForm.jsx'));
 
 // Aptitud Médica
-const MedicalExamList = lazy(() => import('@/pages/sst/MedicalExamList.jsx'));
-const MedicalExamForm = lazy(() => import('@/pages/sst/MedicalExamForm.jsx'));
+//const MedicalExamList = lazy(() => import('@/pages/sst/MedicalExamList.jsx'));
+//const MedicalExamForm = lazy(() => import('@/pages/sst/MedicalExamForm.jsx'));
 
 const SignIn = lazy(() => import('@/pages/auth/sign-in'));
 const SignUp = lazy(() => import('@/pages/auth/sign-up'));
@@ -50,7 +50,7 @@ const EquipmentInspectionForm = lazy(() => import('@/pages/sst/EquipmentInspecti
 
 const RiskAssessmentList = lazy(() => import('@/pages/riesgos/RiskAssessmentList'));
 const RiskAssessmentForm = lazy(() => import('@/pages/riesgos/RiskAssessmentForm.jsx'));
-const RiskControlDetailPage = lazy(() => import('@/pages/riesgos/RiskControlDetailPage.jsx'));
+const RiskControlDetailPage = lazy(() => import('@/pages/riaesgos/RiskControlDetailPage.jsx'));
 const RiskControlForm = lazy(() => import('@/pages/riesgos/RiskControlForm.jsx'));
 const icon = { className: 'w-5 h-5 text-inherit' };
 
@@ -111,9 +111,9 @@ export const routes = [
       { path: 'sst/equipment/:id/inspections/:inspectionId', element: <EquipmentInspectionForm /> },
 
       // Aptitud Médica
-      { path: 'sst/aptitud-medica', element: <MedicalExamList /> },
-      { path: 'sst/aptitud-medica/new', element: <MedicalExamForm /> },
-      { path: 'sst/aptitud-medica/:id', element: <MedicalExamForm /> },
+      //{ path: 'sst/aptitud-medica', element: <MedicalExamList /> },
+      //{ path: 'sst/aptitud-medica/new', element: <MedicalExamForm /> },
+      //{ path: 'sst/aptitud-medica/:id', element: <MedicalExamForm /> },
 
       // Accidentes de Trabajo
       { path: 'sst/accidentes', element: <WorkAccidentList /> },

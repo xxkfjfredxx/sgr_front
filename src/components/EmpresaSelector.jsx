@@ -13,25 +13,20 @@ export default function EmpresaSelector() {
   useEffect(() => {
     if (!user || empresasCargadas) return;
 
-    const isSuperAdmin =
-      user.is_superuser ||
-      (user.role?.name?.toLowerCase() === "admin" && !user.role.company);
-
-    const endpoint = isSuperAdmin ? "/companies/" : "/companies/my-companies/";
+    const endpoint = "/companies/me/";
 
     console.log("Usuario:", user);
-    console.log("isSuperAdmin:", isSuperAdmin);
     console.log("Consultando endpoint:", endpoint);
 
     api
       .get(endpoint)
       .then((res) => {
-        console.log("Empresas cargadas:", res.data.results);
-        setEmpresas(res.data.results);
-        setEmpresasCargadas(true); // ✅ marca como cargado
+        // res.data es un objeto único
+        setEmpresas([res.data]);
+        setEmpresasCargadas(true);
       })
       .catch((err) => {
-        console.error("Error cargando empresas:", err);
+        console.error("Error cargando empresa:", err);
       });
   }, [user, empresasCargadas]);
 
@@ -47,32 +42,34 @@ export default function EmpresaSelector() {
       <label className="block text-sm font-medium text-gray-700 mb-1">
         Empresa
       </label>
-      <select
-        className="
-          block w-full 
-          px-4 py-2 
-          bg-white 
-          border border-gray-300 
-          rounded-lg 
-          shadow-sm 
-          text-gray-700 
-          text-sm 
-          focus:outline-none 
-          focus:ring-2 focus:ring-blue-400 
-          focus:border-transparent
-        "
-        value={empresaId ?? ""}
-        onChange={(e) => setEmpresaId(Number(e.target.value))}
-      >
-        <option value="" disabled>
-          Selecciona empresa
-        </option>
-        {empresas.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
+        <select
+          className="
+            block w-full 
+            px-4 py-2 
+            bg-white 
+            border border-gray-300 
+            rounded-lg 
+            shadow-sm 
+            text-gray-700 
+            text-sm 
+            focus:outline-none 
+            focus:ring-2 focus:ring-blue-400 
+            focus:border-transparent
+          "
+          value={empresaId ?? ""}
+          onChange={(e) => setEmpresaId(Number(e.target.value))}
+        >
+          {empresas.length > 1 && (
+            <option value="" disabled>
+              Selecciona empresa
+            </option>
+          )}
+          {empresas.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
     </div>
   );
 }

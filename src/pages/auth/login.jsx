@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/configs/routes';
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function Login() {
     setError('');
 
     try {
-      const response = await api.post('login/', { username, password });
+      const response = await api.post('login/', { email, password });
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);
@@ -37,6 +37,9 @@ function Login() {
         localStorage.setItem('userId', user.id ?? '');
         localStorage.setItem('username', user.username ?? '');
         localStorage.setItem('email', user.email ?? '');
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("empresaActivaId", response.data.user.company);
+        localStorage.setItem("token", response.data.token);
         localStorage.setItem('role', JSON.stringify(user.role ?? null)); // ✅ CORRECTO
         localStorage.setItem('isStaff', String(user.is_staff ?? false));
         localStorage.setItem('isSuperuser', String(user.is_superuser ?? false));
@@ -59,10 +62,10 @@ function Login() {
         <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
         <form onSubmit={handleLogin} className="space-y-4">
           <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input

@@ -1,15 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export function useEmpresaActiva() {
-  const [empresaActivaId, setEmpresaActivaId] = useState(() => {
-    return localStorage.getItem('empresaActivaId') || null;
+  // Inicializamos una sola vez desde localStorage
+  const [empresaActivaId] = useState(() => {
+    return localStorage.getItem('empresaActivaId');
   });
 
-  useEffect(() => {
-    if (empresaActivaId) {
-      localStorage.setItem('empresaActivaId', empresaActivaId);
-    }
-  }, [empresaActivaId]);
-
-  return { empresaActivaId, setEmpresaActivaId };
+  // Devolvemos directamente el estado
+  return empresaActivaId;
 }
