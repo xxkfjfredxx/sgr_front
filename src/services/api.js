@@ -1,38 +1,28 @@
+// src/services/api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/", // o usa import.meta.env.VITE_API_BASE
+  baseURL: import.meta.env.VITE_API_BASE || "http://localhost:8000/api/",
 });
 
-// Interceptor para agregar token a cada request
 api.interceptors.request.use((config) => {
-  // ❗ Evita enviar el token si la URL es login
+  // No agregues token/empresa al login
   if (!config.url.includes('login')) {
     const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Token ${token}`;
-    }
+    if (token) config.headers.Authorization = `Token ${token}`;
+    const empresaId = localStorage.getItem("empresaActivaId");
+    if (empresaId) config.headers['x-active-company'] = empresaId;
   }
-
-  const empresaId = localStorage.getItem("empresaActivaId");
-  if (empresaId) {
-    config.headers["X-Active-Company"] = empresaId;
-  }
-
   return config;
 });
 
-// ⛔ Interceptor para detectar errores 401
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      // Elimina sesión
       localStorage.removeItem("token");
       localStorage.removeItem("empresaActivaId");
       localStorage.removeItem("user");
-
-      // Redirige al login con mensaje de expiración
       window.location.href = '/?expired=1';
     }
     return Promise.reject(error);

@@ -46,7 +46,7 @@ export default function EmployeeList() {
     };
 
     api
-      .get("/employees/", { params })
+      .get("/people/", { params })
       .then((res) => {
         const list = Array.isArray(res.data.results) ? res.data.results : [];
         setEmployees(list);

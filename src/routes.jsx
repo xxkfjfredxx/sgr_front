@@ -1,7 +1,16 @@
 // src/routes.jsx
-
+import { BriefcaseIcon, UsersIcon, ListBulletIcon } from '@heroicons/react/24/solid';
 import { lazy } from 'react';
-import { HomeIcon, UserCircleIcon, TableCellsIcon, InformationCircleIcon, PlusIcon, ServerStackIcon, RectangleStackIcon, BeakerIcon } from '@heroicons/react/24/solid';
+import {
+  HomeIcon,
+  UserCircleIcon,
+  TableCellsIcon,
+  InformationCircleIcon,
+  PlusIcon,
+  ServerStackIcon,
+  RectangleStackIcon,
+  BeakerIcon,
+} from '@heroicons/react/24/solid';
 
 import MedicalExamsPage from '@/pages/employees/MedicalExamsPage.jsx';
 
@@ -28,6 +37,12 @@ const AbsencePage = lazy(() => import('@/pages/sst/AbsencePage.jsx'));
 const TrainingPage = lazy(() => import('@/pages/sst/TrainingPage.jsx'));
 const TrainingSessionDetail = lazy(() => import('@/pages/sst/TrainingSessionDetail.jsx'));
 
+// NUEVO: módulos de contratistas / personas
+const ContractorCompanyList = lazy(() => import('@/pages/contractors/ContractorCompanyList.jsx'));
+const ContractorWorkerList = lazy(() => import('@/pages/contractors/ContractorWorkerList.jsx'));
+const AssignmentsBulkClose = lazy(() => import('@/pages/contractors/AssignmentsBulkClose.jsx'));
+const PeopleList = lazy(() => import('@/pages/people/PeopleList.jsx'));
+
 // Vacunaciones
 const VaccinationList = lazy(() => import('@/pages/sst/VaccinationList.jsx'));
 const VaccinationForm = lazy(() => import('@/pages/sst/VaccinationForm.jsx'));
@@ -36,22 +51,22 @@ const VaccinationForm = lazy(() => import('@/pages/sst/VaccinationForm.jsx'));
 const WorkAccidentList = lazy(() => import('@/pages/sst/WorkAccidentList.jsx'));
 const WorkAccidentForm = lazy(() => import('@/pages/sst/WorkAccidentForm.jsx'));
 
-// Aptitud Médica
-//const MedicalExamList = lazy(() => import('@/pages/sst/MedicalExamList.jsx'));
-//const MedicalExamForm = lazy(() => import('@/pages/sst/MedicalExamForm.jsx'));
-
+// Auth
 const SignIn = lazy(() => import('@/pages/auth/sign-in'));
 const SignUp = lazy(() => import('@/pages/auth/sign-up'));
 
+// Equipos / Inspecciones
 const EquipmentInventoryList = lazy(() => import('@/pages/sst/EquipmentInventoryList.jsx'));
 const EquipmentInventoryForm = lazy(() => import('@/pages/sst/EquipmentInventoryForm.jsx'));
 const EquipmentInspectionList = lazy(() => import('@/pages/sst/EquipmentInspectionList.jsx'));
 const EquipmentInspectionForm = lazy(() => import('@/pages/sst/EquipmentInspectionForm.jsx'));
 
-const RiskAssessmentList = lazy(() => import('@/pages/riesgos/RiskAssessmentList'));
+// Riesgos (corregidos imports)
+const RiskAssessmentList = lazy(() => import('@/pages/riesgos/RiskAssessmentList.jsx'));
 const RiskAssessmentForm = lazy(() => import('@/pages/riesgos/RiskAssessmentForm.jsx'));
-const RiskControlDetailPage = lazy(() => import('@/pages/riaesgos/RiskControlDetailPage.jsx'));
+const RiskControlDetailPage = lazy(() => import('@/pages/riesgos/RiskControlDetailPage.jsx'));
 const RiskControlForm = lazy(() => import('@/pages/riesgos/RiskControlForm.jsx'));
+
 const icon = { className: 'w-5 h-5 text-inherit' };
 
 export const routes = [
@@ -70,7 +85,7 @@ export const routes = [
       { path: 'employees/:id/documents', element: <EmployeeDocumentsPage /> },
       { path: 'employees/:id/medical-exams', element: <MedicalExamsPage /> },
       { icon: <UserCircleIcon {...icon} />, name: 'Subir Docs (Admin)', path: 'documents-upload', element: <EmployeeDocumentsAdmin /> },
-      //{ icon: <UserCircleIcon {...icon} />, name: 'Exámenes Médicos (Admin)', path: 'medical-exams-admin', element: <EmployeeMedicalExamsAdminPage /> },
+      // { icon: <UserCircleIcon {...icon} />, name: 'Exámenes Médicos (Admin)', path: 'medical-exams-admin', element: <EmployeeMedicalExamsAdminPage /> },
       { icon: <UserCircleIcon {...icon} />, name: 'Mis Exámenes Médicos', path: 'my-medical-exams', element: <MedicalExamSelfPage /> },
 
       // SST
@@ -84,36 +99,35 @@ export const routes = [
         icon: <BeakerIcon {...icon} />,
         name: 'Evaluaciones de Riesgos',
         path: 'riesgos',
-        element: <RiskAssessmentList />
+        element: <RiskAssessmentList />,
       },
       { path: 'riesgos/new', element: <RiskAssessmentForm /> },
       { path: 'riesgos/:id', element: <RiskAssessmentForm /> },
+
+      // Personas / Contratistas / Cierre masivo (CORREGIDO nombres de componentes)
+      { name: 'Personas', path: 'people', element: <PeopleList /> },
+      { name: 'Contratistas', path: 'contractors', element: <ContractorCompanyList /> },
+      { name: '', path: 'contractors/:id/workers', element: <ContractorWorkerList /> },
+      { name: 'Cierre masivo', path: 'assignments/bulk-close', element: <AssignmentsBulkClose /> },
 
       // Control de Riesgos por Evaluación
       { path: 'riesgos/controles/:id', element: <RiskControlDetailPage /> },
       { path: 'riesgos/controles/:id/new', element: <RiskControlForm /> },
       { path: 'riesgos/controles/:id/edit/:controlId', element: <RiskControlForm /> },
 
+      // Equipos / Inspecciones
       {
         path: 'sst/equipment',
         icon: <TableCellsIcon {...icon} />,
         name: 'Inventario Equipos',
-        element: <EquipmentInventoryList />
+        element: <EquipmentInventoryList />,
       },
       { path: 'sst/equipment/new', element: <EquipmentInventoryForm /> },
-      // <-- esta es la ruta de edición:
       { path: 'sst/equipment/:id', element: <EquipmentInventoryForm /> },
 
-      // inspecciones (si quieres edición de inspecciones):
       { path: 'sst/equipment/:id/inspections', element: <EquipmentInspectionList /> },
       { path: 'sst/equipment/:id/inspections/new', element: <EquipmentInspectionForm /> },
-      // para editar inspección:
       { path: 'sst/equipment/:id/inspections/:inspectionId', element: <EquipmentInspectionForm /> },
-
-      // Aptitud Médica
-      //{ path: 'sst/aptitud-medica', element: <MedicalExamList /> },
-      //{ path: 'sst/aptitud-medica/new', element: <MedicalExamForm /> },
-      //{ path: 'sst/aptitud-medica/:id', element: <MedicalExamForm /> },
 
       // Accidentes de Trabajo
       { path: 'sst/accidentes', element: <WorkAccidentList /> },
@@ -127,8 +141,8 @@ export const routes = [
       // Otras
       { icon: <UserCircleIcon {...icon} />, name: 'Perfil', path: 'profile', element: <Profile /> },
       { icon: <TableCellsIcon {...icon} />, name: 'Tablas', path: 'tables', element: <Tables /> },
-      { icon: <InformationCircleIcon {...icon} />, name: 'Notificaciones', path: 'notifications', element: <Notifications /> }
-    ]
+      { icon: <InformationCircleIcon {...icon} />, name: 'Notificaciones', path: 'notifications', element: <Notifications /> },
+    ],
   },
   {
     layout: 'auth',
@@ -138,9 +152,9 @@ export const routes = [
       { path: 'employees/create', element: <EmployeeForm /> },
       { path: 'my-documents', element: <EmployeeDocumentsPage /> },
       { path: 'employment-links/create', element: <EmploymentLinkForm /> },
-      { path: 'employment-links', element: <EmploymentLinkList /> }
-    ]
-  }
+      { path: 'employment-links', element: <EmploymentLinkList /> },
+    ],
+  },
 ];
 
 export default routes;
